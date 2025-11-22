@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { AppState } from '../store/app.state';
@@ -10,6 +11,8 @@ import { Usuario } from '../models/usuario.model';
   providedIn: 'root'
 })
 export class AuthService {
+  private router = inject(Router);
+
   constructor(private store: Store<AppState>) {}
 
   getCurrentUser(): Observable<Usuario | null> {
@@ -35,7 +38,9 @@ export class AuthService {
   }
 
   logout(): void {
+    localStorage.removeItem('currentUser');
     this.store.dispatch(logout());
+    this.router.navigate(['/login']);
   }
 }
 

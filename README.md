@@ -2,274 +2,147 @@
 
 Aplicación web desarrollada con Angular 20 para la gestión de horarios académicos.
 
-## Tecnologías
+## Requisitos Previos
 
-- Angular 20
-- TypeScript 5.x
-- PrimeNG 18+
-- PrimeFlex
-- SCSS
-- RxJS
+Se requiere tener instalado:
 
-## Estructura del Proyecto
+- **Node.js** (versión 18 o superior)
+- **npm** (viene incluido con Node.js)
 
-```
-src/
-├── app/
-│   ├── components/           # Componentes de la aplicación
-│   │   ├── login/           # Componente de autenticación
-│   │   ├── navbar/          # Barra de navegación
-│   │   ├── usuarios-list/   # Lista de estudiantes
-│   │   ├── asignaturas-list/ # Lista de asignaturas
-│   │   ├── horarios-list/   # Lista de horarios
-│   │   └── calendario-semanal/ # Calendario semanal
-│   │
-│   ├── services/            # Servicios HTTP
-│   │   ├── auth.service.ts
-│   │   ├── usuarios.service.ts
-│   │   ├── asignaturas.service.ts
-│   │   └── horarios.service.ts
-│   │
-│   ├── models/              # Interfaces TypeScript
-│   │   ├── usuario.model.ts
-│   │   ├── asignatura.model.ts
-│   │   └── horario.model.ts
-│   │
-│   ├── guards/              # Guards de rutas
-│   │   ├── auth.guard.ts
-│   │   └── admin.guard.ts
-│   │
-│   ├── app.routes.ts        # Configuración de rutas
-│   └── app.config.ts        # Configuración de la aplicación
-│
-└── environments/            # Configuración de entornos
-    ├── environment.ts
-    └── environment.prod.ts
-```
+## Instalación
 
-## Configuración
+1. Abrir una terminal en la carpeta `frontend-academic`
 
-### Instalación
-
+2. Instalar las dependencias del proyecto:
 ```bash
 npm install
 ```
 
-### Ejecución
+Este comando descargará e instalará todas las librerías necesarias (Angular, PrimeNG, TailwindCSS, NgRx, etc.)
+
+
+## Configuración
+
+Las URLs de la API están configuradas directamente en los servicios y effects. Por defecto, todas apuntan a:
+
+- **Backend URL:** `http://localhost:3000/api`
+
+Las URLs están definidas en:
+- `src/app/services/auth.service.ts` - `http://localhost:3000/api/auth`
+- `src/app/services/usuarios.service.ts` - `http://localhost:3000/api/usuarios`
+- `src/app/services/asignaturas.service.ts` - `http://localhost:3000/api/asignaturas`
+- `src/app/services/horarios.service.ts` - `http://localhost:3000/api/horarios`
+- `src/app/store/*/effects.ts` - URLs correspondientes para cada módulo
+
+Si se necesita cambiar la URL del backend, modificar directamente en estos archivos.
+
+**Importante:** Asegurarse de que el backend esté corriendo en el puerto 3000 antes de iniciar el frontend (ver README del backend)
+
+## Ejecución
+
+Para iniciar el servidor de desarrollo:
 
 ```bash
-# Servidor de desarrollo
 npm start
-
-# La aplicación estará disponible en http://localhost:4200
 ```
 
-### Compilación
+La aplicación estará disponible en: **http://localhost:4200**
+
+
+## Compilación para Producción
+
+Para generar los archivos optimizados para producción:
 
 ```bash
-# Compilar para producción
 npm run build
+```
 
-# Los archivos compilados estarán en dist/
+Los archivos compilados se generarán en la carpeta `dist/frontend-app/`
+
+## Estructura del Proyecto
+
+```
+frontend-academic/
+├── src/
+│   ├── app/
+│   │   ├── components/        # Componentes standalone
+│   │   │   ├── login/        # Componente de autenticación
+│   │   │   ├── navbar/       # Barra de navegación
+│   │   │   ├── usuarios-list/    # CRUD de estudiantes
+│   │   │   ├── asignaturas-list/ # CRUD de asignaturas
+│   │   │   ├── horarios-list/    # CRUD de horarios
+│   │   │   └── calendario-semanal/ # Vista calendario
+│   │   ├── services/          # Servicios HTTP (URLs hardcodeadas)
+│   │   │   ├── auth.service.ts
+│   │   │   ├── usuarios.service.ts
+│   │   │   ├── asignaturas.service.ts
+│   │   │   └── horarios.service.ts
+│   │   ├── store/            # Gestión de estado (NgRx)
+│   │   │   ├── auth/         # Estado de autenticación
+│   │   │   ├── usuarios/     # Estado de usuarios
+│   │   │   ├── asignaturas/  # Estado de asignaturas
+│   │   │   ├── horarios/     # Estado de horarios
+│   │   │   └── app.state.ts  # Estado raíz
+│   │   ├── guards/           # Protección de rutas
+│   │   │   ├── auth.guard.ts
+│   │   │   └── admin.guard.ts
+│   │   ├── models/           # Interfaces TypeScript
+│   │   │   ├── usuario.model.ts
+│   │   │   ├── asignatura.model.ts
+│   │   │   └── horario.model.ts
+│   │   ├── app.config.ts     # Configuración de la app (NgRx, PrimeNG)
+│   │   ├── app.routes.ts     # Configuración de rutas
+│   │   └── app.ts            # Componente raíz
+│   ├── styles.css            # Estilos globales + TailwindCSS
+│   └── main.ts               # Bootstrap
+├── tailwind.config.js        # Configuración de TailwindCSS
+├── postcss.config.js         # Configuración de PostCSS
+├── package.json
+└── README.md
 ```
 
 ## Rutas de la Aplicación
 
-```
-/login                 - Página de inicio de sesión (pública)
-/calendario            - Calendario semanal (autenticado)
-/usuarios              - Gestión de estudiantes (solo admin)
-/asignaturas          - Gestión de asignaturas (solo admin)
-/horarios             - Gestión de horarios (solo admin)
-```
+- `/login` - Página de inicio de sesión
+- `/calendario` - Vista de calendario semanal
+- `/usuarios` - Gestión de estudiantes (solo admin)
+- `/asignaturas` - Gestión de asignaturas (solo admin)
+- `/horarios` - Gestión de horarios (solo admin)
 
-## Componentes Principales
+## Credenciales de Acceso
 
-### LoginComponent
-- Formulario de autenticación
-- Validación de credenciales
-- Redirección según rol de usuario
+### Administrador
+- **Correo:** `admin@admin.com`
+- **Contraseña:** `admin123`
 
-### NavbarComponent
-- Menú de navegación dinámico según rol
-- Botón de cerrar sesión
-- Responsive con menú móvil
+### Estudiantes
+Para los estudiantes, el correo es el mismo que está registrado en la base de datos y la contraseña es:
+- **Contraseña:** `password123`
 
-### UsuariosListComponent
-- Lista de estudiantes en tarjetas
-- Formulario de creación y edición
-- Validaciones de formulario
-- Confirmación de eliminación
+Ejemplos de estudiantes de prueba:
+- `juan.perez@correo.com` / `password123`
+- `maria.lopez@correo.com` / `password123`
+- `carlos.martinez@correo.com` / `password123`
 
-### AsignaturasListComponent
-- Lista de asignaturas en tarjetas
-- Gestión completa CRUD
-- Validación de datos
+## Solución de Problemas
 
-### HorariosListComponent
-- Lista de horarios en tabla
-- Validación de conflictos en tiempo real
-- Alertas de cruce de horarios
+### Error: "Cannot find module"
+Ejecutar nuevamente `npm install` para reinstalar las dependencias.
 
-### CalendarioSemanalComponent
-- Vista de calendario tipo Google Calendar
-- Navegación por semanas
-- Selector de estudiante (admin)
-- Vista personal (estudiante)
+### Error: "Port 4200 is already in use"
+Cerrar otras aplicaciones que estén usando el puerto 4200, o cambiar el puerto en `angular.json`.
 
-## Servicios
+### La aplicación no se conecta al backend
+Verificar que:
+1. El backend esté corriendo en `http://localhost:3000`
+2. Las URLs en los servicios (`src/app/services/*.service.ts`) y effects (`src/app/store/*/effects.ts`) apunten correctamente al backend
+3. No haya problemas de CORS (el backend debe permitir requests desde `http://localhost:4200`)
 
-### AuthService
-```typescript
-login(correo: string, password: string): Observable<Usuario>
-logout(): void
-getCurrentUser(): Usuario | null
-isAdmin(): boolean
-isEstudiante(): boolean
-```
+## Tecnologías Utilizadas
 
-### UsuariosService
-```typescript
-getUsuarios(): Observable<Usuario[]>
-getUsuario(id: number): Observable<Usuario>
-createUsuario(usuario: CreateUsuarioDto): Observable<Usuario>
-updateUsuario(id: number, usuario: UpdateUsuarioDto): Observable<Usuario>
-deleteUsuario(id: number): Observable<void>
-```
-
-### AsignaturasService
-```typescript
-getAsignaturas(): Observable<Asignatura[]>
-getAsignatura(id: number): Observable<Asignatura>
-createAsignatura(asignatura: CreateAsignaturaDto): Observable<Asignatura>
-updateAsignatura(id: number, asignatura: UpdateAsignaturaDto): Observable<Asignatura>
-deleteAsignatura(id: number): Observable<void>
-```
-
-### HorariosService
-```typescript
-getHorarios(): Observable<Horario[]>
-getHorario(id: number): Observable<Horario>
-createHorario(horario: CreateHorarioDto): Observable<Horario>
-updateHorario(id: number, horario: UpdateHorarioDto): Observable<Horario>
-deleteHorario(id: number): Observable<void>
-```
-
-## Guards
-
-### authGuard
-Protege rutas que requieren autenticación. Redirige a /login si no hay sesión activa.
-
-### adminGuard
-Protege rutas exclusivas de administrador. Redirige a /calendario si el usuario es estudiante.
-
-## Modelos de Datos
-
-### Usuario
-```typescript
-interface Usuario {
-  id: number;
-  cedula: string;
-  nombre: string;
-  correo: string;
-  telefono: string;
-  rol: 'admin' | 'estudiante';
-  password?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-```
-
-### Asignatura
-```typescript
-interface Asignatura {
-  id: number;
-  nombre: string;
-  descripcion?: string;
-  maxclasessemana: number;
-  created_at?: string;
-  updated_at?: string;
-}
-```
-
-### Horario
-```typescript
-interface Horario {
-  id: number;
-  dia: DiaSemana;
-  hora_inicio: string;
-  hora_fin: string;
-  id_usuario: number;
-  id_asignatura: number;
-  usuario?: Usuario;
-  asignatura?: Asignatura;
-  created_at?: string;
-  updated_at?: string;
-}
-```
-
-## Estilos
-
-### Variables SCSS Principales
-```scss
-$primary-color: #6366f1;      // Azul índigo
-$secondary-color: #8b5cf6;    // Púrpura
-$success-color: #10b981;      // Verde
-$danger-color: #ef4444;       // Rojo
-$warning-color: #f59e0b;      // Naranja
-```
-
-### Tema PrimeNG
-Se utiliza el tema Aura de PrimeNG configurado en `app.config.ts`.
-
-## Validaciones de Formularios
-
-### Formulario de Usuario
-- Cédula: requerida, 5-20 caracteres
-- Nombre: requerido, 2-100 caracteres
-- Correo: requerido, formato email válido
-- Teléfono: requerido, 7-20 caracteres
-- Rol: requerido, valores válidos
-- Contraseña: requerida al crear, 6-50 caracteres
-
-### Formulario de Asignatura
-- Nombre: requerido, 2-100 caracteres
-- Descripción: opcional, máximo 500 caracteres
-- Máximo clases por semana: requerido, 1-10
-
-### Formulario de Horario
-- Día: requerido
-- Hora inicio: requerida, formato HH:mm
-- Hora fin: requerida, formato HH:mm
-- Usuario: requerido
-- Asignatura: requerida
-
-## Notificaciones
-
-Se utiliza el componente Toast de PrimeNG para mostrar notificaciones:
-
-- Success: Operaciones exitosas (verde)
-- Error: Errores del servidor (rojo)
-- Warning: Advertencias y validaciones (amarillo)
-- Info: Información general (azul)
-
-## Persistencia de Sesión
-
-La sesión de usuario se almacena en localStorage para mantener la autenticación entre recargas de página.
-
-## Scripts Disponibles
-
-```bash
-npm start          # Servidor de desarrollo
-npm run build      # Compilar para producción
-npm run test       # Ejecutar pruebas
-npm run lint       # Ejecutar linter
-```
-
-## Consideraciones de Desarrollo
-
-1. Todos los componentes son standalone
-2. Se utiliza programación reactiva con RxJS
-3. Los formularios son reactivos (ReactiveFormsModule)
-4. Se implementa lazy loading donde sea posible
-5. Los estilos son modulares y reutilizables
+- Angular 20.3.0
+- TypeScript 5.9.2
+- PrimeNG 20.3.0
+- TailwindCSS 3.4.18
+- NgRx 20.1.0
+- RxJS 7.8.0

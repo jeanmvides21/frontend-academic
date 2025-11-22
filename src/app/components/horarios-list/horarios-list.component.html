@@ -87,9 +87,11 @@
     [draggable]="false"
     [resizable]="false"
   >
-    <form [formGroup]="horarioForm" (ngSubmit)="saveHorario()">
-      <div class="form-group">
-        <label for="id_usuario">Estudiante *</label>
+    <form [formGroup]="horarioForm" (ngSubmit)="saveHorario()" class="space-y-4">
+      <div class="space-y-2">
+        <label for="id_usuario" class="block text-sm font-medium text-gray-700">
+          Estudiante <span class="text-red-500">*</span>
+        </label>
         <p-select
           inputId="id_usuario"
           formControlName="id_usuario"
@@ -100,15 +102,21 @@
           [style]="{ width: '100%' }"
           [filter]="true"
           filterPlaceholder="Buscar estudiante..."
-          [class.error]="horarioForm.get('id_usuario')?.invalid && horarioForm.get('id_usuario')?.touched"
+          styleClass="w-full"
+          [class.border-red-500]="horarioForm.get('id_usuario')?.invalid && horarioForm.get('id_usuario')?.touched"
         />
         @if (horarioForm.get('id_usuario')?.invalid && horarioForm.get('id_usuario')?.touched) {
-          <small class="error-text">{{ getFieldError('id_usuario') }}</small>
+          <small class="text-red-600 text-xs flex items-center mt-1">
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            {{ getFieldError('id_usuario') }}
+          </small>
         }
       </div>
 
-      <div class="form-group">
-        <label for="id_asignatura">Asignatura *</label>
+      <div class="space-y-2">
+        <label for="id_asignatura" class="block text-sm font-medium text-gray-700">
+          Asignatura <span class="text-red-500">*</span>
+        </label>
         <p-select
           inputId="id_asignatura"
           formControlName="id_asignatura"
@@ -117,22 +125,29 @@
           optionValue="id"
           placeholder="Selecciona una asignatura"
           [style]="{ width: '100%' }"
-          [class.error]="horarioForm.get('id_asignatura')?.invalid && horarioForm.get('id_asignatura')?.touched"
+          styleClass="w-full"
+          [class.border-red-500]="horarioForm.get('id_asignatura')?.invalid && horarioForm.get('id_asignatura')?.touched"
         />
         @if (horarioForm.get('id_asignatura')?.invalid && horarioForm.get('id_asignatura')?.touched) {
-          <small class="error-text">{{ getFieldError('id_asignatura') }}</small>
+          <small class="text-red-600 text-xs flex items-center mt-1">
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            {{ getFieldError('id_asignatura') }}
+          </small>
         }
       </div>
 
-      <div class="form-group">
-        <label for="dia">Día de la Semana *</label>
+      <div class="space-y-2">
+        <label for="dia" class="block text-sm font-medium text-gray-700">
+          Día de la Semana <span class="text-red-500">*</span>
+        </label>
         <p-select
           inputId="dia"
           formControlName="dia"
           [options]="diasSemana"
           placeholder="Selecciona un día"
           [style]="{ width: '100%' }"
-          [class.error]="horarioForm.get('dia')?.invalid && horarioForm.get('dia')?.touched"
+          styleClass="w-full"
+          [class.border-red-500]="horarioForm.get('dia')?.invalid && horarioForm.get('dia')?.touched"
         >
           <ng-template let-dia pTemplate="item">
             {{ getDiaNombre(dia) }}
@@ -142,66 +157,81 @@
           </ng-template>
         </p-select>
         @if (horarioForm.get('dia')?.invalid && horarioForm.get('dia')?.touched) {
-          <small class="error-text">{{ getFieldError('dia') }}</small>
+          <small class="text-red-600 text-xs flex items-center mt-1">
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            {{ getFieldError('dia') }}
+          </small>
         }
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="hora_inicio">Hora Inicio *</label>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-2">
+          <label for="hora_inicio" class="block text-sm font-medium text-gray-700">
+            Hora Inicio <span class="text-red-500">*</span>
+          </label>
           <input
             pInputText
             type="time"
             id="hora_inicio"
             formControlName="hora_inicio"
-            [class.error]="horarioForm.get('hora_inicio')?.invalid && horarioForm.get('hora_inicio')?.touched"
+            class="w-full"
+            [class.border-red-500]="horarioForm.get('hora_inicio')?.invalid && horarioForm.get('hora_inicio')?.touched"
           />
           @if (horarioForm.get('hora_inicio')?.invalid && horarioForm.get('hora_inicio')?.touched) {
-            <small class="error-text">{{ getFieldError('hora_inicio') }}</small>
+            <small class="text-red-600 text-xs flex items-center mt-1">
+              <i class="pi pi-exclamation-circle mr-1"></i>
+              {{ getFieldError('hora_inicio') }}
+            </small>
           }
         </div>
 
-        <div class="form-group">
-          <label for="hora_fin">Hora Fin *</label>
+        <div class="space-y-2">
+          <label for="hora_fin" class="block text-sm font-medium text-gray-700">
+            Hora Fin <span class="text-red-500">*</span>
+          </label>
           <input
             pInputText
             type="time"
             id="hora_fin"
             formControlName="hora_fin"
-            [class.error]="horarioForm.get('hora_fin')?.invalid && horarioForm.get('hora_fin')?.touched"
+            class="w-full"
+            [class.border-red-500]="horarioForm.get('hora_fin')?.invalid && horarioForm.get('hora_fin')?.touched"
           />
           @if (horarioForm.get('hora_fin')?.invalid && horarioForm.get('hora_fin')?.touched) {
-            <small class="error-text">{{ getFieldError('hora_fin') }}</small>
+            <small class="text-red-600 text-xs flex items-center mt-1">
+              <i class="pi pi-exclamation-circle mr-1"></i>
+              {{ getFieldError('hora_fin') }}
+            </small>
           }
         </div>
       </div>
 
       <!-- Alerta de Cruce de Horarios -->
       @if (horarioConflicto) {
-        <div class="cruce-warning">
-          <div class="warning-header">
-            <i class="pi pi-exclamation-triangle"></i>
-            <span class="warning-title">Este horario se cruza con:</span>
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+          <div class="flex items-center mb-3">
+            <i class="pi pi-exclamation-triangle text-yellow-600 text-lg mr-2"></i>
+            <span class="font-semibold text-yellow-800">Este horario se cruza con:</span>
           </div>
-          <div class="warning-body">
-            <div class="warning-item">
-              <i class="pi pi-book"></i>
+          <div class="space-y-2 ml-7">
+            <div class="flex items-center text-sm text-gray-700">
+              <i class="pi pi-book text-yellow-600 mr-2"></i>
               <span><strong>Asignatura:</strong> {{ getAsignaturaNombre(horarioConflicto.id_asignatura) }}</span>
             </div>
-            <div class="warning-item">
-              <i class="pi pi-calendar"></i>
+            <div class="flex items-center text-sm text-gray-700">
+              <i class="pi pi-calendar text-yellow-600 mr-2"></i>
               <span><strong>Día:</strong> {{ getDiaNombre(horarioConflicto.dia) }}</span>
             </div>
-            <div class="warning-item">
-              <i class="pi pi-clock"></i>
+            <div class="flex items-center text-sm text-gray-700">
+              <i class="pi pi-clock text-yellow-600 mr-2"></i>
               <span><strong>Horario:</strong> {{ horarioConflicto.hora_inicio.substring(0, 5) }} - {{ horarioConflicto.hora_fin.substring(0, 5) }}</span>
             </div>
           </div>
-          <p class="warning-note">Por favor, ajusta el horario para evitar el conflicto.</p>
+          <p class="text-sm text-yellow-700 mt-3 ml-7">Por favor, ajusta el horario para evitar el conflicto.</p>
         </div>
       }
 
-      <div class="form-actions">
+      <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <p-button
           label="Cancelar"
           severity="secondary"

@@ -16,7 +16,14 @@ export class App implements OnInit {
   constructor(private store: Store<AppState>) {}
 
   ngOnInit(): void {
-    // Cargar usuario desde localStorage al iniciar la aplicación
-    this.store.dispatch(loadUserFromStorage());
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+      try {
+        JSON.parse(userStr);
+        this.store.dispatch(loadUserFromStorage());
+      } catch (error) {
+        localStorage.removeItem('currentUser');
+      }
+    }
   }
 }

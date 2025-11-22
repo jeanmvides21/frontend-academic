@@ -36,66 +36,92 @@
     [draggable]="false"
     [resizable]="false"
   >
-    <form [formGroup]="usuarioForm" (ngSubmit)="saveUsuario()">
-      <div class="form-group">
-        <label for="cedula">Cédula *</label>
+    <form [formGroup]="usuarioForm" (ngSubmit)="saveUsuario()" class="space-y-4">
+      <div class="space-y-2">
+        <label for="cedula" class="block text-sm font-medium text-gray-700">
+          Cédula <span class="text-red-500">*</span>
+        </label>
         <input
           pInputText
           id="cedula"
           formControlName="cedula"
           placeholder="Ej: 1234567890"
-          [class.error]="usuarioForm.get('cedula')?.invalid && usuarioForm.get('cedula')?.touched"
+          class="w-full"
+          [class.border-red-500]="usuarioForm.get('cedula')?.invalid && usuarioForm.get('cedula')?.touched"
         />
         @if (usuarioForm.get('cedula')?.invalid && usuarioForm.get('cedula')?.touched) {
-          <small class="error-text">{{ getFieldError('cedula') }}</small>
+          <small class="text-red-600 text-xs flex items-center mt-1">
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            {{ getFieldError('cedula') }}
+          </small>
         }
       </div>
 
-      <div class="form-group">
-        <label for="nombre">Nombre Completo *</label>
+      <div class="space-y-2">
+        <label for="nombre" class="block text-sm font-medium text-gray-700">
+          Nombre Completo <span class="text-red-500">*</span>
+        </label>
         <input
           pInputText
           id="nombre"
           formControlName="nombre"
           placeholder="Ej: Juan Pérez García"
-          [class.error]="usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched"
+          class="w-full"
+          [class.border-red-500]="usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched"
         />
         @if (usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched) {
-          <small class="error-text">{{ getFieldError('nombre') }}</small>
+          <small class="text-red-600 text-xs flex items-center mt-1">
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            {{ getFieldError('nombre') }}
+          </small>
         }
       </div>
 
-      <div class="form-group">
-        <label for="correo">Correo Electrónico *</label>
+      <div class="space-y-2">
+        <label for="correo" class="block text-sm font-medium text-gray-700">
+          Correo Electrónico <span class="text-red-500">*</span>
+        </label>
         <input
           pInputText
           id="correo"
           type="email"
           formControlName="correo"
           placeholder="estudiante@correo.com"
-          [class.error]="usuarioForm.get('correo')?.invalid && usuarioForm.get('correo')?.touched"
+          class="w-full"
+          [class.border-red-500]="usuarioForm.get('correo')?.invalid && usuarioForm.get('correo')?.touched"
         />
         @if (usuarioForm.get('correo')?.invalid && usuarioForm.get('correo')?.touched) {
-          <small class="error-text">{{ getFieldError('correo') }}</small>
+          <small class="text-red-600 text-xs flex items-center mt-1">
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            {{ getFieldError('correo') }}
+          </small>
         }
       </div>
 
-      <div class="form-group">
-        <label for="telefono">Teléfono *</label>
+      <div class="space-y-2">
+        <label for="telefono" class="block text-sm font-medium text-gray-700">
+          Teléfono <span class="text-red-500">*</span>
+        </label>
         <input
           pInputText
           id="telefono"
           formControlName="telefono"
           placeholder="Ej: 3001234567"
-          [class.error]="usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched"
+          class="w-full"
+          [class.border-red-500]="usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched"
         />
         @if (usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched) {
-          <small class="error-text">{{ getFieldError('telefono') }}</small>
+          <small class="text-red-600 text-xs flex items-center mt-1">
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            {{ getFieldError('telefono') }}
+          </small>
         }
       </div>
 
-      <div class="form-group">
-        <label for="rol">Rol *</label>
+      <div class="space-y-2">
+        <label for="rol" class="block text-sm font-medium text-gray-700">
+          Rol <span class="text-red-500">*</span>
+        </label>
         <p-select
           id="rol"
           formControlName="rol"
@@ -106,26 +132,40 @@
           styleClass="w-full"
         />
         @if (usuarioForm.get('rol')?.invalid && usuarioForm.get('rol')?.touched) {
-          <small class="error-text">{{ getFieldError('rol') }}</small>
+          <small class="text-red-600 text-xs flex items-center mt-1">
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            {{ getFieldError('rol') }}
+          </small>
         }
       </div>
 
-      <div class="form-group">
-        <label for="password">Contraseña {{ editingUsuario ? '(dejar en blanco para mantener la actual)' : '*' }}</label>
+      <div class="space-y-2">
+        <label for="password" class="block text-sm font-medium text-gray-700">
+          Contraseña 
+          @if (!editingUsuario) {
+            <span class="text-red-500">*</span>
+          } @else {
+            <span class="text-gray-500 text-xs font-normal">(dejar en blanco para mantener la actual)</span>
+          }
+        </label>
         <input
           pInputText
           id="password"
           type="password"
           formControlName="password"
           [placeholder]="editingUsuario ? 'Dejar vacío para no cambiar' : 'Mínimo 6 caracteres'"
-          [class.error]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched"
+          class="w-full"
+          [class.border-red-500]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched"
         />
         @if (usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched) {
-          <small class="error-text">{{ getFieldError('password') }}</small>
+          <small class="text-red-600 text-xs flex items-center mt-1">
+            <i class="pi pi-exclamation-circle mr-1"></i>
+            {{ getFieldError('password') }}
+          </small>
         }
       </div>
 
-      <div class="form-actions">
+      <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <p-button
           label="Cancelar"
           severity="secondary"

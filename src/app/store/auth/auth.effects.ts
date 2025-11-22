@@ -21,7 +21,6 @@ export class AuthEffects {
         this.http.post<any>(`${this.apiUrl}/login`, { correo, password }).pipe(
           map((response) => {
             const usuario = response.data || response;
-            // Guardar en localStorage
             localStorage.setItem('currentUser', JSON.stringify(usuario));
             return AuthActions.loginSuccess({ user: usuario });
           }),
@@ -42,7 +41,6 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.loginSuccess),
         tap(({ user }) => {
-          // Redirigir según el rol
           if (user.rol === 'admin') {
             this.router.navigate(['/usuarios']);
           } else {
@@ -57,10 +55,6 @@ export class AuthEffects {
     () =>
       this.actions$.pipe(
         ofType(AuthActions.logout),
-        tap(() => {
-          localStorage.removeItem('currentUser');
-          this.router.navigate(['/login']);
-        }),
         map(() => AuthActions.logoutSuccess())
       )
   );
