@@ -14,7 +14,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { BadgeModule} from 'primeng/badge';
 import { TableModule } from 'primeng/table';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-asignaturas-list',
@@ -33,7 +34,8 @@ import { MessageService } from 'primeng/api';
     TooltipModule,
     TagModule,
     BadgeModule,
-    TableModule
+    TableModule,
+    ConfirmDialogModule
   ],
   templateUrl: './asignaturas-list.component.html',
   styleUrl: './asignaturas-list.component.scss'
@@ -50,7 +52,8 @@ export class AsignaturasListComponent implements OnInit {
   constructor(
     private asignaturasService: AsignaturasService,
     private fb: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) {
     this.asignaturaForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
@@ -173,37 +176,43 @@ export class AsignaturasListComponent implements OnInit {
   }
 
   deleteAsignatura(id: number): void {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta asignatura?')) {
-      return;
-    }
+    this.confirmationService.confirm({
+      message: '¿Estás seguro de que deseas eliminar esta asignatura?',
+      header: 'Confirmar eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.deletingId = id;
 
-    this.deletingId = id;
-
-    this.asignaturasService.deleteAsignatura(id).subscribe({
-      next: () => {
-        this.loadAsignaturas();
-        this.deletingId = null;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Eliminado',
-          detail: 'Asignatura eliminada correctamente',
-          life: 3000
-        });
-      },
-      error: (err) => {
-        this.deletingId = null;
-        console.error('Error:', err);
-        
-        let errorDetail = 'Error al eliminar la asignatura';
-        if (err.error?.message) {
-          errorDetail = err.error.message;
-        }
-        
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: errorDetail,
-          life: 5000
+        this.asignaturasService.deleteAsignatura(id).subscribe({
+          next: () => {
+            this.loadAsignaturas();
+            this.deletingId = null;
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Eliminado',
+              detail: 'Asignatura eliminada correctamente',
+              life: 3000
+            });
+          },
+          error: (err) => {
+            this.deletingId = null;
+            console.error('Error:', err);
+            
+            let errorDetail = 'Error al eliminar la asignatura';
+            if (err.error?.message) {
+              errorDetail = err.error.message;
+            }
+            
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: errorDetail,
+              life: 5000
+            });
+          }
         });
       }
     });

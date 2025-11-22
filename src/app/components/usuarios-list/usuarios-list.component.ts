@@ -12,7 +12,8 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { TableModule } from 'primeng/table';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-usuarios-list',
@@ -30,7 +31,8 @@ import { MessageService } from 'primeng/api';
     SkeletonModule,
     TooltipModule,
     TagModule,
-    TableModule
+    TableModule,
+    ConfirmDialogModule
   ],
   templateUrl: './usuarios-list.component.html',
   styleUrl: './usuarios-list.component.scss'
@@ -47,7 +49,8 @@ export class UsuariosListComponent implements OnInit {
   constructor(
     private usuariosService: UsuariosService,
     private fb: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) {
     this.usuarioForm = this.fb.group({
       cedula: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
@@ -196,38 +199,44 @@ export class UsuariosListComponent implements OnInit {
   }
 
   deleteUsuario(id: number): void {
-    if (!confirm('¿Estás seguro de que deseas eliminar este estudiante?')) {
-      return;
-    }
+    this.confirmationService.confirm({
+      message: '¿Estás seguro de que deseas eliminar este estudiante?',
+      header: 'Confirmar eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.deletingId = id;
+        this.error = null;
 
-    this.deletingId = id;
-    this.error = null;
-
-    this.usuariosService.deleteUsuario(id).subscribe({
-      next: () => {
-        this.loadUsuarios();
-        this.deletingId = null;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Eliminado',
-          detail: 'Estudiante eliminado correctamente',
-          life: 3000
-        });
-      },
-      error: (err) => {
-        this.deletingId = null;
-        console.error('Error:', err);
-        
-        let errorDetail = 'Error al eliminar el estudiante';
-        if (err.error?.message) {
-          errorDetail = err.error.message;
-        }
-        
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: errorDetail,
-          life: 5000
+        this.usuariosService.deleteUsuario(id).subscribe({
+          next: () => {
+            this.loadUsuarios();
+            this.deletingId = null;
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Eliminado',
+              detail: 'Estudiante eliminado correctamente',
+              life: 3000
+            });
+          },
+          error: (err) => {
+            this.deletingId = null;
+            console.error('Error:', err);
+            
+            let errorDetail = 'Error al eliminar el estudiante';
+            if (err.error?.message) {
+              errorDetail = err.error.message;
+            }
+            
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: errorDetail,
+              life: 5000
+            });
+          }
         });
       }
     });

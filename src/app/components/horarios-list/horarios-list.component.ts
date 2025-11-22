@@ -19,7 +19,8 @@ import { BadgeModule } from 'primeng/badge';
 import { DividerModule } from 'primeng/divider';
 import { TableModule } from 'primeng/table';
 import { MultiSelectModule } from 'primeng/multiselect';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-horarios-list',
@@ -39,7 +40,8 @@ import { MessageService } from 'primeng/api';
     BadgeModule,
     DividerModule,
     TableModule,
-    MultiSelectModule
+    MultiSelectModule,
+    ConfirmDialogModule
   ],
   templateUrl: './horarios-list.component.html',
   styleUrl: './horarios-list.component.scss'
@@ -74,7 +76,8 @@ export class HorariosListComponent implements OnInit {
     private usuariosService: UsuariosService,
     private asignaturasService: AsignaturasService,
     private fb: FormBuilder,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
   ) {
     this.horarioForm = this.fb.group({
       dia: ['', Validators.required],
@@ -362,37 +365,43 @@ export class HorariosListComponent implements OnInit {
   }
 
   deleteHorario(id: number): void {
-    if (!confirm('¿Estás seguro de que deseas eliminar este horario?')) {
-      return;
-    }
+    this.confirmationService.confirm({
+      message: '¿Estás seguro de que deseas eliminar este horario?',
+      header: 'Confirmar eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.deletingId = id;
 
-    this.deletingId = id;
-
-    this.horariosService.deleteHorario(id).subscribe({
-      next: () => {
-        this.loadHorarios();
-        this.deletingId = null;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Eliminado',
-          detail: 'Horario eliminado correctamente',
-          life: 3000
-        });
-      },
-      error: (err) => {
-        this.deletingId = null;
-        console.error('Error:', err);
-        
-        let errorDetail = 'Error al eliminar el horario';
-        if (err.error?.message) {
-          errorDetail = err.error.message;
-        }
-        
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: errorDetail,
-          life: 5000
+        this.horariosService.deleteHorario(id).subscribe({
+          next: () => {
+            this.loadHorarios();
+            this.deletingId = null;
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Eliminado',
+              detail: 'Horario eliminado correctamente',
+              life: 3000
+            });
+          },
+          error: (err) => {
+            this.deletingId = null;
+            console.error('Error:', err);
+            
+            let errorDetail = 'Error al eliminar el horario';
+            if (err.error?.message) {
+              errorDetail = err.error.message;
+            }
+            
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: errorDetail,
+              life: 5000
+            });
+          }
         });
       }
     });
