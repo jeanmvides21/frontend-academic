@@ -7,22 +7,24 @@
     </div>
     
     <div class="header-controls">
-      <!-- Selector de Estudiante -->
-      <div class="usuario-selector">
-        <label for="usuario">Estudiante:</label>
-        <p-select
-          id="usuario"
-          [(ngModel)]="usuarioSeleccionado"
-          [options]="usuarios()"
-          optionLabel="nombre"
-          optionValue="id"
-          placeholder="Seleccionar estudiante"
-          (onChange)="onUsuarioChange()"
-          [style]="{ minWidth: '350px' }"
-          [filter]="true"
-          filterPlaceholder="Buscar estudiante..."
-        />
-      </div>
+      <!-- Selector de Estudiante (solo para admin) -->
+      @if (authService.isAdmin()) {
+        <div class="usuario-selector">
+          <label for="usuario">Estudiante:</label>
+          <p-select
+            id="usuario"
+            [(ngModel)]="usuarioSeleccionado"
+            [options]="usuarios()"
+            optionLabel="nombre"
+            optionValue="id"
+            placeholder="Seleccionar estudiante"
+            (onChange)="onUsuarioChange()"
+            [style]="{ minWidth: '350px' }"
+            [filter]="true"
+            filterPlaceholder="Buscar estudiante..."
+          />
+        </div>
+      }
       
       <!-- Navegación de Semanas -->
       <div class="semana-navegacion">

@@ -42,31 +42,7 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 1rem;
   transition: $transition;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-
-  .brand-icon {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-    i {
-      font-size: 1.75rem;
-      color: $text-white;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-  }
 
   .brand-text {
     display: flex;
@@ -264,6 +240,128 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           opacity: 1;
         }
       }
+    }
+  }
+}
+
+// User Actions (Desktop)
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    color: white;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+
+    i {
+      font-size: 1.1rem;
+    }
+  }
+
+  .logout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+
+    i {
+      font-size: 1.1rem;
+    }
+
+    .logout-text {
+      letter-spacing: 0.5px;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// Variables
+$text-primary: #1f2937;
+$text-secondary: #6b7280;
+
+// Mobile User Info
+.mobile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(102, 126, 234, 0.15);
+  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+  margin-bottom: 0.5rem;
+
+  i {
+    font-size: 2rem;
+    color: #667eea;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 50%;
+  }
+
+  .user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .user-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: $text-primary;
+    }
+
+    .user-role {
+      font-size: 0.9rem;
+      color: $text-secondary;
+    }
+  }
+}
+
+.logout-item {
+  border-top: 1px solid rgba(102, 126, 234, 0.2);
+  margin-top: 1rem;
+  padding-top: 1rem;
+
+  .logout-link {
+    color: #ef4444 !important;
+    font-weight: 600;
+
+    i:first-child {
+      color: #ef4444;
+    }
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.1);
     }
   }
 }

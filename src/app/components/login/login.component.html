@@ -1,0 +1,78 @@
+<div class="login-container">
+  <div class="login-card">
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="login-header">
+          <div class="logo-container">
+            <i class="pi pi-graduation-cap"></i>
+          </div>
+          <h2>Sistema Académico</h2>
+          <p>Inicia sesión para continuar</p>
+        </div>
+      </ng-template>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <!-- Correo -->
+        <div class="form-field">
+          <label for="correo">
+            <i class="pi pi-envelope"></i>
+            Correo Electrónico
+          </label>
+          <input
+            pInputText
+            id="correo"
+            type="email"
+            formControlName="correo"
+            placeholder="example@example.com"
+            [class.ng-invalid]="loginForm.get('correo')?.invalid && loginForm.get('correo')?.touched"
+            [class.ng-dirty]="loginForm.get('correo')?.touched"
+          />
+          @if (getFieldError('correo')) {
+            <small class="error-message">{{ getFieldError('correo') }}</small>
+          }
+        </div>
+
+        <!-- Contraseña -->
+        <div class="form-field">
+          <label for="password">
+            <i class="pi pi-lock"></i>
+            Contraseña
+          </label>
+          <p-password
+            id="password"
+            formControlName="password"
+            placeholder="contraseña"
+            [toggleMask]="true"
+            [feedback]="false"
+            styleClass="w-full"
+            [inputStyle]="{ width: '100%' }"
+          />
+          @if (getFieldError('password')) {
+            <small class="error-message">{{ getFieldError('password') }}</small>
+          }
+        </div>
+
+        <!-- Botón de login -->
+        <div class="form-actions">
+          <p-button
+            type="submit"
+            label="Iniciar Sesión"
+            icon="pi pi-sign-in"
+            [loading]="loading"
+            styleClass="w-full"
+          />
+        </div>
+      </form>
+
+      <ng-template pTemplate="footer">
+        <div class="login-footer">
+          <p class="info-text">
+            <i class="pi pi-info-circle"></i>
+            Usa tus credenciales institucionales
+          </p>
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+</div>
+

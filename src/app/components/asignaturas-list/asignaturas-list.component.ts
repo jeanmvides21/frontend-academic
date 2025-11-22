@@ -13,6 +13,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { BadgeModule} from 'primeng/badge';
+import { TableModule } from 'primeng/table';
 import { MessageService } from 'primeng/api';
 
 @Component({
@@ -31,7 +32,8 @@ import { MessageService } from 'primeng/api';
     SkeletonModule,
     TooltipModule,
     TagModule,
-    BadgeModule
+    BadgeModule,
+    TableModule
   ],
   templateUrl: './asignaturas-list.component.html',
   styleUrl: './asignaturas-list.component.scss'

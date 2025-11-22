@@ -94,6 +94,37 @@
         }
       </div>
 
+      <div class="form-group">
+        <label for="rol">Rol *</label>
+        <p-select
+          id="rol"
+          formControlName="rol"
+          [options]="[{label: 'Estudiante', value: 'estudiante'}, {label: 'Administrador', value: 'admin'}]"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccionar rol"
+          styleClass="w-full"
+        />
+        @if (usuarioForm.get('rol')?.invalid && usuarioForm.get('rol')?.touched) {
+          <small class="error-text">{{ getFieldError('rol') }}</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña {{ editingUsuario ? '(dejar en blanco para mantener la actual)' : '*' }}</label>
+        <input
+          pInputText
+          id="password"
+          type="password"
+          formControlName="password"
+          [placeholder]="editingUsuario ? 'Dejar vacío para no cambiar' : 'Mínimo 6 caracteres'"
+          [class.error]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched"
+        />
+        @if (usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched) {
+          <small class="error-text">{{ getFieldError('password') }}</small>
+        }
+      </div>
+
       <div class="form-actions">
         <p-button
           label="Cancelar"
@@ -114,12 +145,12 @@
 
   <!-- Loading State -->
   @if (loading && usuarios.length === 0) {
-    <div class="usuarios-grid">
-      @for (item of [1,2,3,4]; track item) {
-        <div class="skeleton-card">
-          <p-skeleton width="100%" height="200px" borderRadius="12px" />
-        </div>
-      }
+    <div class="table-container">
+      <div class="skeleton-table">
+        @for (item of [1,2,3,4,5]; track item) {
+          <p-skeleton width="100%" height="60px" borderRadius="8px" styleClass="mb-2" />
+        }
+      </div>
     </div>
   }
 
@@ -138,80 +169,129 @@
     </div>
   }
 
-  <!-- Usuarios Grid -->
+  <!-- Usuarios Table -->
   @else {
-    <div class="usuarios-grid">
-      @for (usuario of usuarios; track usuario.id) {
-        <div class="usuario-card">
-          <div class="card-header">
-            <div class="usuario-avatar">
-              <span>{{ usuario.nombre.charAt(0).toUpperCase() }}</span>
-            </div>
-            <div class="usuario-info">
-              <h3>{{ usuario.nombre }}</h3>
-              <p-tag value="ID: {{ usuario.id }}" severity="secondary" />
-            </div>
-          </div>
-
-          <div class="card-body">
-            <div class="info-item">
-              <i class="pi pi-id-card"></i>
-              <div class="info-content">
-                <span class="info-label">Cédula</span>
-                <span class="info-value">{{ usuario.cedula }}</span>
+    <div class="table-container">
+      <p-table
+        [value]="usuarios"
+        [loading]="loading"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5, 10, 20, 50]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} estudiantes"
+        [globalFilterFields]="['nombre', 'cedula', 'correo', 'telefono']"
+        styleClass="p-datatable-striped p-datatable-gridlines"
+        [tableStyle]="{ 'min-width': '50rem' }"
+      >
+        <!-- Header -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 60px"></th>
+            <th pSortableColumn="cedula">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-id-card"></i>
+                Cédula <p-sortIcon field="cedula" />
               </div>
-            </div>
-
-            <div class="info-item">
-              <i class="pi pi-envelope"></i>
-              <div class="info-content">
-                <span class="info-label">Correo</span>
-                <span class="info-value">{{ usuario.correo }}</span>
+            </th>
+            <th pSortableColumn="nombre">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-user"></i>
+                Nombre <p-sortIcon field="nombre" />
               </div>
-            </div>
-
-            @if (usuario.telefono) {
-              <div class="info-item">
+            </th>
+            <th pSortableColumn="correo">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-envelope"></i>
+                Correo <p-sortIcon field="correo" />
+              </div>
+            </th>
+            <th pSortableColumn="telefono">
+              <div class="flex align-items-center gap-2">
                 <i class="pi pi-phone"></i>
-                <div class="info-content">
-                  <span class="info-label">Teléfono</span>
-                  <span class="info-value">{{ usuario.telefono }}</span>
-                </div>
+                Teléfono <p-sortIcon field="telefono" />
               </div>
-            }
-
-            @if (usuario.created_at) {
-              <div class="info-item">
-                <i class="pi pi-calendar"></i>
-                <div class="info-content">
-                  <span class="info-label">Registrado</span>
-                  <span class="info-value">{{ formatDate(usuario.created_at) }}</span>
-                </div>
+            </th>
+            <th pSortableColumn="rol">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-shield"></i>
+                Rol <p-sortIcon field="rol" />
               </div>
-            }
-          </div>
+            </th>
+            <th style="width: 200px">Acciones</th>
+          </tr>
+        </ng-template>
 
-          <div class="card-actions">
-            <p-button
-              label="Editar"
-              icon="pi pi-pencil"
-              severity="secondary"
-              [outlined]="true"
-              (onClick)="openEditForm(usuario)"
-              [disabled]="loading || deletingId === usuario.id"
-            />
-            <p-button
-              label="Eliminar"
-              icon="pi pi-trash"
-              severity="danger"
-              [outlined]="true"
-              (onClick)="deleteUsuario(usuario.id)"
-              [loading]="deletingId === usuario.id"
-              [disabled]="loading"
-            />
-          </div>
-        </div>
-      }
+        <!-- Body -->
+        <ng-template pTemplate="body" let-usuario>
+          <tr>
+            <td>
+              <div class="usuario-avatar-table">
+                <span>{{ usuario.nombre.charAt(0).toUpperCase() }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="font-medium">{{ usuario.cedula }}</span>
+            </td>
+            <td>
+              <span class="font-medium">{{ usuario.nombre }}</span>
+            </td>
+            <td>
+              <span>{{ usuario.correo }}</span>
+            </td>
+            <td>
+              <span>{{ usuario.telefono || '-' }}</span>
+            </td>
+            <td>
+              @if (usuario.rol === 'admin') {
+                <p-tag value="Administrador" severity="info" />
+              } @else {
+                <p-tag value="Estudiante" severity="success" />
+              }
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button
+                  type="button"
+                  class="action-btn edit-btn"
+                  (click)="openEditForm(usuario)"
+                  [disabled]="loading || deletingId === usuario.id"
+                  pTooltip="Editar"
+                  tooltipPosition="top"
+                >
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button
+                  type="button"
+                  class="action-btn delete-btn"
+                  (click)="deleteUsuario(usuario.id)"
+                  [disabled]="loading || deletingId === usuario.id"
+                  pTooltip="Eliminar"
+                  tooltipPosition="top"
+                >
+                  @if (deletingId === usuario.id) {
+                    <i class="pi pi-spin pi-spinner"></i>
+                  } @else {
+                    <i class="pi pi-trash"></i>
+                  }
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- Empty Message -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7">
+              <div class="empty-table-message">
+                <i class="pi pi-users"></i>
+                <p>No hay estudiantes registrados</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
   }
 </div>

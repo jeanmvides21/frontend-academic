@@ -1,14 +1,38 @@
 import { Routes } from '@angular/router';
+import { LoginComponent } from './components/login/login.component';
 import { UsuariosListComponent } from './components/usuarios-list/usuarios-list.component';
 import { AsignaturasListComponent } from './components/asignaturas-list/asignaturas-list.component';
 import { HorariosListComponent } from './components/horarios-list/horarios-list.component';
 import { CalendarioSemanalComponent } from './components/calendario-semanal/calendario-semanal.component';
+import { authGuard } from './guards/auth.guard';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/calendario', pathMatch: 'full' },
-  { path: 'calendario', component: CalendarioSemanalComponent },
-  { path: 'usuarios', component: UsuariosListComponent },
-  { path: 'asignaturas', component: AsignaturasListComponent },
-  { path: 'horarios', component: HorariosListComponent },
-  { path: '**', redirectTo: '/calendario' }
+  { path: 'login', component: LoginComponent },
+  { 
+    path: '', 
+    redirectTo: '/login', 
+    pathMatch: 'full' 
+  },
+  { 
+    path: 'calendario', 
+    component: CalendarioSemanalComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'usuarios', 
+    component: UsuariosListComponent,
+    canActivate: [adminGuard]
+  },
+  { 
+    path: 'asignaturas', 
+    component: AsignaturasListComponent,
+    canActivate: [adminGuard]
+  },
+  { 
+    path: 'horarios', 
+    component: HorariosListComponent,
+    canActivate: [adminGuard]
+  },
+  { path: '**', redirectTo: '/login' }
 ];

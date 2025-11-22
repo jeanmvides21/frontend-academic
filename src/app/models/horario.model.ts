@@ -2,13 +2,13 @@ import { Usuario } from './usuario.model';
 import { Asignatura } from './asignatura.model';
 
 export enum DiaSemana {
-  LUNES = 'LUNES',
-  MARTES = 'MARTES',
-  MIERCOLES = 'MIERCOLES',
-  JUEVES = 'JUEVES',
-  VIERNES = 'VIERNES',
-  SABADO = 'SABADO',
-  DOMINGO = 'DOMINGO',
+  LUNES = 'Lunes',
+  MARTES = 'Martes',
+  MIERCOLES = 'Miércoles',
+  JUEVES = 'Jueves',
+  VIERNES = 'Viernes',
+  SABADO = 'Sábado',
+  DOMINGO = 'Domingo',
 }
 
 export interface Horario {

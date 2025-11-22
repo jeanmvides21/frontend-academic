@@ -17,6 +17,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { BadgeModule } from 'primeng/badge';
 import { DividerModule } from 'primeng/divider';
+import { TableModule } from 'primeng/table';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { MessageService } from 'primeng/api';
 
 @Component({
@@ -35,13 +37,16 @@ import { MessageService } from 'primeng/api';
     TooltipModule,
     TagModule,
     BadgeModule,
-    DividerModule
+    DividerModule,
+    TableModule,
+    MultiSelectModule
   ],
   templateUrl: './horarios-list.component.html',
   styleUrl: './horarios-list.component.scss'
 })
 export class HorariosListComponent implements OnInit {
   horarios: Horario[] = [];
+  horariosFiltrados: Horario[] = [];
   usuarios: Usuario[] = [];
   asignaturas: Asignatura[] = [];
   loading = false;
@@ -51,6 +56,9 @@ export class HorariosListComponent implements OnInit {
   horarioForm: FormGroup;
   deletingId: number | null = null;
   horarioConflicto: Horario | null = null;
+  usuarioSeleccionado: number | null = null;
+  asignaturasSeleccionadas: number[] = [];
+  asignaturasDisponibles: { label: string; value: number }[] = [];
   diasSemana: DiaSemana[] = [
     DiaSemana.LUNES,
     DiaSemana.MARTES,
@@ -116,6 +124,8 @@ export class HorariosListComponent implements OnInit {
     this.horariosService.getHorarios().subscribe({
       next: (data) => {
         this.horarios = data || [];
+        this.filtrarHorarios();
+        this.actualizarAsignaturasDisponibles();
         this.loading = false;
       },
       error: (err) => {
@@ -123,6 +133,65 @@ export class HorariosListComponent implements OnInit {
         this.handleError(err, 'horarios');
       }
     });
+  }
+
+  filtrarHorarios(): void {
+    let filtrados = [...this.horarios];
+
+    // Filtro por usuario seleccionado
+    if (this.usuarioSeleccionado) {
+      filtrados = filtrados.filter(
+        horario => horario.id_usuario === this.usuarioSeleccionado
+      );
+    }
+
+    // Filtro por asignaturas seleccionadas
+    if (this.asignaturasSeleccionadas.length > 0) {
+      filtrados = filtrados.filter(horario =>
+        this.asignaturasSeleccionadas.includes(horario.id_asignatura)
+      );
+    }
+
+    this.horariosFiltrados = filtrados;
+    this.actualizarAsignaturasDisponibles();
+  }
+
+  onUsuarioChange(): void {
+    this.filtrarHorarios();
+    this.actualizarAsignaturasDisponibles();
+  }
+
+  onAsignaturasChange(): void {
+    this.filtrarHorarios();
+  }
+
+  actualizarAsignaturasDisponibles(): void {
+    // Obtener asignaturas únicas de los horarios filtrados por usuario
+    let horariosParaAsignaturas = this.horarios;
+    
+    if (this.usuarioSeleccionado) {
+      horariosParaAsignaturas = horariosParaAsignaturas.filter(
+        h => h.id_usuario === this.usuarioSeleccionado
+      );
+    }
+
+    // Obtener IDs únicos de asignaturas
+    const idsAsignaturas = [...new Set(horariosParaAsignaturas.map(h => h.id_asignatura))];
+    
+    // Crear opciones de asignaturas disponibles
+    this.asignaturasDisponibles = idsAsignaturas
+      .map(id => {
+        const asignatura = this.asignaturas.find(a => a.id === id);
+        return asignatura ? { label: asignatura.nombre, value: asignatura.id } : null;
+      })
+      .filter((item): item is { label: string; value: number } => item !== null)
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  limpiarFiltros(): void {
+    this.usuarioSeleccionado = null;
+    this.asignaturasSeleccionadas = [];
+    this.filtrarHorarios();
   }
 
   refresh(): void {
@@ -360,6 +429,19 @@ export class HorariosListComponent implements OnInit {
       'DOMINGO': 'Domingo'
     };
     return nombres[dia] || dia;
+  }
+
+  getDiaSeverity(dia: DiaSemana): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | null {
+    const severityMap: { [key: string]: 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' } = {
+      'LUNES': 'info',
+      'MARTES': 'success',
+      'MIERCOLES': 'warn',
+      'JUEVES': 'danger',
+      'VIERNES': 'info',
+      'SABADO': 'secondary',
+      'DOMINGO': 'secondary'
+    };
+    return severityMap[dia] || 'info';
   }
 
   private handleError(err: any, tipo: string): void {

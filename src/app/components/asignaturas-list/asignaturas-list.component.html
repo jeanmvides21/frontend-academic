@@ -104,12 +104,12 @@
 
   <!-- Loading State -->
   @if (loading && asignaturas.length === 0) {
-    <div class="asignaturas-grid">
-      @for (item of [1,2,3,4,5,6]; track item) {
-        <div class="skeleton-card">
-          <p-skeleton width="100%" height="220px" borderRadius="12px" />
-        </div>
-      }
+    <div class="table-container">
+      <div class="skeleton-table">
+        @for (item of [1,2,3,4,5]; track item) {
+          <p-skeleton width="100%" height="60px" borderRadius="8px" styleClass="mb-2" />
+        }
+      </div>
     </div>
   }
 
@@ -128,77 +128,117 @@
     </div>
   }
 
-  <!-- Asignaturas Grid -->
+  <!-- Asignaturas Table -->
   @else {
-    <div class="asignaturas-grid">
-      @for (asignatura of asignaturas; track asignatura.id) {
-        <div class="asignatura-card">
-          <div class="card-header">
-            <div class="asignatura-icon">
-              <i class="pi pi-book"></i>
-            </div>
-            <div class="asignatura-badge">
+    <div class="table-container">
+      <p-table
+        [value]="asignaturas"
+        [loading]="loading"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5, 10, 20, 50]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} asignaturas"
+        [globalFilterFields]="['nombre', 'descripcion']"
+        styleClass="p-datatable-striped p-datatable-gridlines"
+        [tableStyle]="{ 'min-width': '50rem' }"
+      >
+        <!-- Header -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 60px"></th>
+            <th pSortableColumn="id">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-hashtag"></i>
+                ID <p-sortIcon field="id" />
+              </div>
+            </th>
+            <th pSortableColumn="nombre">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-book"></i>
+                Nombre <p-sortIcon field="nombre" />
+              </div>
+            </th>
+            <th>Descripción</th>
+            <th pSortableColumn="maxclasessemana">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-calendar-clock"></i>
+                Máx. Clases/Semana <p-sortIcon field="maxclasessemana" />
+              </div>
+            </th>
+            <th style="width: 200px">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <!-- Body -->
+        <ng-template pTemplate="body" let-asignatura>
+          <tr>
+            <td>
+              <div class="asignatura-icon-table">
+                <i class="pi pi-book"></i>
+              </div>
+            </td>
+            <td>
+              <span class="font-medium">{{ asignatura.id }}</span>
+            </td>
+            <td>
+              <span class="font-medium">{{ asignatura.nombre }}</span>
+            </td>
+            <td>
+              <span class="descripcion-text">
+                {{ asignatura.descripcion || '-' }}
+              </span>
+            </td>
+            <td>
               <p-tag 
-                [value]="asignatura.maxclasessemana + ' clase' + (asignatura.maxclasessemana > 1 ? 's' : '') + '/sem'"
+                [value]="asignatura.maxclasessemana + ' clase' + (asignatura.maxclasessemana > 1 ? 's' : '')"
                 severity="info"
                 [rounded]="true"
               />
-            </div>
-          </div>
-
-          <div class="card-body">
-            <h3 class="asignatura-nombre">{{ asignatura.nombre }}</h3>
-            
-            @if (asignatura.descripcion) {
-              <p class="asignatura-descripcion">{{ asignatura.descripcion }}</p>
-            } @else {
-              <p class="asignatura-descripcion no-descripcion">Sin descripción</p>
-            }
-
-            <div class="asignatura-details">
-              <div class="detail-item">
-                <i class="pi pi-hashtag"></i>
-                <span class="detail-label">ID:</span>
-                <span class="detail-value">{{ asignatura.id }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button
+                  type="button"
+                  class="action-btn edit-btn"
+                  (click)="openEditForm(asignatura)"
+                  [disabled]="loading || deletingId === asignatura.id"
+                  pTooltip="Editar"
+                  tooltipPosition="top"
+                >
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button
+                  type="button"
+                  class="action-btn delete-btn"
+                  (click)="deleteAsignatura(asignatura.id)"
+                  [disabled]="loading || deletingId === asignatura.id"
+                  pTooltip="Eliminar"
+                  tooltipPosition="top"
+                >
+                  @if (deletingId === asignatura.id) {
+                    <i class="pi pi-spin pi-spinner"></i>
+                  } @else {
+                    <i class="pi pi-trash"></i>
+                  }
+                </button>
               </div>
+            </td>
+          </tr>
+        </ng-template>
 
-              <div class="detail-item">
-                <i class="pi pi-calendar-clock"></i>
-                <span class="detail-label">Max Clases:</span>
-                <span class="detail-value">{{ asignatura.maxclasessemana }} por semana</span>
+        <!-- Empty Message -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6">
+              <div class="empty-table-message">
+                <i class="pi pi-book"></i>
+                <p>No hay asignaturas registradas</p>
               </div>
-
-              @if (asignatura.created_at) {
-                <div class="detail-item">
-                  <i class="pi pi-calendar"></i>
-                  <span class="detail-label">Creada:</span>
-                  <span class="detail-value">{{ formatDate(asignatura.created_at) }}</span>
-                </div>
-              }
-            </div>
-          </div>
-
-          <div class="card-actions">
-            <p-button
-              label="Editar"
-              icon="pi pi-pencil"
-              severity="secondary"
-              [outlined]="true"
-              (onClick)="openEditForm(asignatura)"
-              [disabled]="loading || deletingId === asignatura.id"
-            />
-            <p-button
-              label="Eliminar"
-              icon="pi pi-trash"
-              severity="danger"
-              [outlined]="true"
-              (onClick)="deleteAsignatura(asignatura.id)"
-              [loading]="deletingId === asignatura.id"
-              [disabled]="loading"
-            />
-          </div>
-        </div>
-      }
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
   }
 </div>

@@ -6,10 +6,12 @@ import { Usuario } from '../../models/usuario.model';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
+import { TableModule } from 'primeng/table';
 import { MessageService } from 'primeng/api';
 
 @Component({
@@ -23,10 +25,12 @@ import { MessageService } from 'primeng/api';
     ButtonModule,
     CardModule,
     InputTextModule,
+    SelectModule,
     DialogModule,
     SkeletonModule,
     TooltipModule,
-    TagModule
+    TagModule,
+    TableModule
   ],
   templateUrl: './usuarios-list.component.html',
   styleUrl: './usuarios-list.component.scss'
@@ -49,7 +53,9 @@ export class UsuariosListComponent implements OnInit {
       cedula: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
       nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       correo: ['', [Validators.required, Validators.email]],
-      telefono: ['', [Validators.minLength(7), Validators.maxLength(20)]]
+      telefono: ['', [Validators.required, Validators.minLength(7), Validators.maxLength(20)]],
+      rol: ['estudiante', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(50)]]
     });
   }
 
@@ -89,7 +95,12 @@ export class UsuariosListComponent implements OnInit {
 
   openCreateForm(): void {
     this.editingUsuario = null;
-    this.usuarioForm.reset();
+    this.usuarioForm.reset({
+      rol: 'estudiante' // Valor por defecto
+    });
+    // Restaurar validación de password al crear
+    this.usuarioForm.get('password')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(50)]);
+    this.usuarioForm.get('password')?.updateValueAndValidity();
     this.showForm = true;
     this.error = null;
   }
@@ -100,8 +111,13 @@ export class UsuariosListComponent implements OnInit {
       cedula: usuario.cedula,
       nombre: usuario.nombre,
       correo: usuario.correo,
-      telefono: usuario.telefono || ''
+      telefono: usuario.telefono || '',
+      rol: usuario.rol
+      // No incluir password al editar
     });
+    // Hacer password opcional al editar
+    this.usuarioForm.get('password')?.clearValidators();
+    this.usuarioForm.get('password')?.updateValueAndValidity();
     this.showForm = true;
     this.error = null;
   }
@@ -109,17 +125,34 @@ export class UsuariosListComponent implements OnInit {
   closeForm(): void {
     this.showForm = false;
     this.editingUsuario = null;
-    this.usuarioForm.reset();
+    this.usuarioForm.reset({
+      rol: 'estudiante'
+    });
+    // Restaurar validación de password
+    this.usuarioForm.get('password')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(50)]);
+    this.usuarioForm.get('password')?.updateValueAndValidity();
     this.error = null;
   }
 
   saveUsuario(): void {
     if (this.usuarioForm.invalid) {
       this.markFormGroupTouched(this.usuarioForm);
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Formulario incompleto',
+        detail: 'Por favor completa todos los campos requeridos',
+        life: 4000
+      });
       return;
     }
 
-    const formValue = this.usuarioForm.value;
+    const formValue = { ...this.usuarioForm.value };
+    
+    // Si estamos editando y no hay password, no enviarla
+    if (this.editingUsuario && !formValue.password) {
+      delete formValue.password;
+    }
+    
     this.loading = true;
     this.error = null;
 

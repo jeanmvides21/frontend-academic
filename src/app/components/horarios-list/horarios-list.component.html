@@ -26,6 +26,57 @@
     </div>
   </div>
 
+  <!-- Filtros -->
+  <div class="filter-card">
+    <div class="filter-content">
+      <div class="filter-group">
+        <label for="filtroUsuario">Estudiante:</label>
+        <p-select
+          inputId="filtroUsuario"
+          [(ngModel)]="usuarioSeleccionado"
+          [options]="usuarios"
+          optionLabel="nombre"
+          optionValue="id"
+          placeholder="Todos los estudiantes"
+          (onChange)="onUsuarioChange()"
+          [style]="{ minWidth: '250px' }"
+          [filter]="true"
+          filterPlaceholder="Buscar estudiante..."
+          [showClear]="true"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="filtroAsignaturas">Filtrar por Asignaturas:</label>
+        <p-multiSelect
+          inputId="filtroAsignaturas"
+          [(ngModel)]="asignaturasSeleccionadas"
+          [options]="asignaturasDisponibles"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Todas las asignaturas"
+          (onChange)="onAsignaturasChange()"
+          [style]="{ minWidth: '300px' }"
+          [filter]="true"
+          filterPlaceholder="Buscar asignatura..."
+          [showClear]="true"
+          [maxSelectedLabels]="2"
+          selectedItemsLabel="{0} asignaturas seleccionadas"
+        />
+      </div>
+
+      @if (usuarioSeleccionado || asignaturasSeleccionadas.length > 0) {
+        <p-button
+          label="Limpiar Filtros"
+          icon="pi pi-times"
+          (onClick)="limpiarFiltros()"
+          [text]="true"
+          severity="secondary"
+        />
+      }
+    </div>
+  </div>
+
 
   <!-- Dialog para Crear/Editar -->
   <p-dialog
@@ -170,102 +221,154 @@
 
   <!-- Loading State -->
   @if (loading && horarios.length === 0) {
-    <div class="horarios-grid">
-      @for (item of [1,2,3,4,5,6]; track item) {
-        <div class="skeleton-card">
-          <p-skeleton width="100%" height="200px" borderRadius="12px" />
-        </div>
-      }
+    <div class="table-container">
+      <div class="skeleton-table">
+        @for (item of [1,2,3,4,5]; track item) {
+          <p-skeleton width="100%" height="70px" borderRadius="12px" styleClass="mb-3" />
+        }
+      </div>
     </div>
   }
 
   <!-- Empty State -->
-  @else if (!loading && horarios.length === 0) {
+  @else if (!loading && horariosFiltrados.length === 0) {
     <div class="empty-state">
       <i class="pi pi-calendar-clock"></i>
-      <h3>No hay horarios registrados</h3>
-      <p>Comienza agregando tu primer horario</p>
-      <p-button
-        label="Crear Horario"
-        icon="pi pi-plus"
-        (onClick)="openCreateForm()"
-        severity="success"
-      />
+      @if ((usuarioSeleccionado || asignaturasSeleccionadas.length > 0) && horarios.length > 0) {
+        <h3>No hay horarios que coincidan con los filtros</h3>
+        <p>Intenta ajustar los filtros de búsqueda</p>
+        <p-button
+          label="Limpiar Filtros"
+          icon="pi pi-times"
+          (onClick)="limpiarFiltros()"
+          severity="secondary"
+        />
+      } @else {
+        <h3>No hay horarios registrados</h3>
+        <p>Comienza agregando tu primer horario</p>
+        <p-button
+          label="Crear Horario"
+          icon="pi pi-plus"
+          (onClick)="openCreateForm()"
+          severity="success"
+        />
+      }
     </div>
   }
 
-  <!-- Horarios Grid -->
+  <!-- Horarios Table -->
   @else {
-    <div class="horarios-grid">
-      @for (horario of horarios; track horario.id) {
-        <div class="horario-card">
-          <div class="card-header">
-            <div class="dia-badge">
-              <i class="pi pi-calendar"></i>
-              <span>{{ getDiaNombre(horario.dia) }}</span>
-            </div>
-            <div class="horario-time">
-              <i class="pi pi-clock"></i>
-              <span>{{ horario.hora_inicio.substring(0, 5) }} - {{ horario.hora_fin.substring(0, 5) }}</span>
-            </div>
-          </div>
-
-          <div class="card-body">
-            <div class="info-section">
-              <div class="info-item usuario">
+    <div class="table-container">
+      <p-table
+        [value]="horariosFiltrados"
+        [loading]="loading"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5, 10, 20, 50]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} horarios"
+        styleClass="p-datatable-striped p-datatable-gridlines"
+        [tableStyle]="{ 'min-width': '50rem' }"
+      >
+        <!-- Header -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 60px"></th>
+            <th pSortableColumn="dia">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-calendar"></i>
+                Día <p-sortIcon field="dia" />
+              </div>
+            </th>
+            <th pSortableColumn="hora_inicio">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-clock"></i>
+                Horario <p-sortIcon field="hora_inicio" />
+              </div>
+            </th>
+            <th pSortableColumn="id_usuario">
+              <div class="flex align-items-center gap-2">
                 <i class="pi pi-user"></i>
-                <div class="info-content">
-                  <span class="info-label">Estudiante</span>
-                  <span class="info-value">{{ getUsuarioNombre(horario.id_usuario) }}</span>
-                </div>
+                Estudiante <p-sortIcon field="id_usuario" />
               </div>
-
-              <p-divider />
-
-              <div class="info-item asignatura">
+            </th>
+            <th pSortableColumn="id_asignatura">
+              <div class="flex align-items-center gap-2">
                 <i class="pi pi-book"></i>
-                <div class="info-content">
-                  <span class="info-label">Asignatura</span>
-                  <span class="info-value">{{ getAsignaturaNombre(horario.id_asignatura) }}</span>
-                </div>
+                Asignatura <p-sortIcon field="id_asignatura" />
               </div>
-            </div>
+            </th>
+            <th style="width: 200px">Acciones</th>
+          </tr>
+        </ng-template>
 
-            <div class="meta-info">
-              <div class="meta-item">
-                <i class="pi pi-hashtag"></i>
-                <span>ID: {{ horario.id }}</span>
+        <!-- Body -->
+        <ng-template pTemplate="body" let-horario>
+          <tr>
+            <td>
+              <div class="horario-icon-table">
+                <i class="pi pi-calendar-clock"></i>
               </div>
-              @if (horario.created_at) {
-                <div class="meta-item">
-                  <i class="pi pi-calendar-plus"></i>
-                  <span>{{ formatDate(horario.created_at) }}</span>
-                </div>
-              }
-            </div>
-          </div>
+            </td>
+            <td>
+              <p-tag 
+                [value]="getDiaNombre(horario.dia)" 
+                [severity]="getDiaSeverity(horario.dia)"
+                [rounded]="true"
+              />
+            </td>
+            <td>
+              <span class="font-medium">{{ horario.hora_inicio.substring(0, 5) }} - {{ horario.hora_fin.substring(0, 5) }}</span>
+            </td>
+            <td>
+              <span class="font-medium">{{ getUsuarioNombre(horario.id_usuario) }}</span>
+            </td>
+            <td>
+              <span>{{ getAsignaturaNombre(horario.id_asignatura) }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button
+                  type="button"
+                  class="action-btn edit-btn"
+                  (click)="openEditForm(horario)"
+                  [disabled]="loading || deletingId === horario.id"
+                  pTooltip="Editar"
+                  tooltipPosition="top"
+                >
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button
+                  type="button"
+                  class="action-btn delete-btn"
+                  (click)="deleteHorario(horario.id)"
+                  [disabled]="loading || deletingId === horario.id"
+                  pTooltip="Eliminar"
+                  tooltipPosition="top"
+                >
+                  @if (deletingId === horario.id) {
+                    <i class="pi pi-spin pi-spinner"></i>
+                  } @else {
+                    <i class="pi pi-trash"></i>
+                  }
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
 
-          <div class="card-actions">
-            <p-button
-              label="Editar"
-              icon="pi pi-pencil"
-              severity="secondary"
-              [outlined]="true"
-              (onClick)="openEditForm(horario)"
-              [disabled]="loading || deletingId === horario.id"
-            />
-            <p-button
-              label="Eliminar"
-              icon="pi pi-trash"
-              severity="danger"
-              [outlined]="true"
-              (onClick)="deleteHorario(horario.id)"
-              [loading]="deletingId === horario.id"
-              [disabled]="loading"
-            />
-          </div>
-        </div>
-      }
+        <!-- Empty Message -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6">
+              <div class="empty-table-message">
+                <i class="pi pi-calendar-clock"></i>
+                <p>No hay horarios registrados</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
   }
 </div>

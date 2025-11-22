@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 
 import { HorariosService } from '../../services/horarios.service';
 import { UsuariosService } from '../../services/usuarios.service';
+import { AuthService } from '../../services/auth.service';
 import { Horario } from '../../models/horario.model';
 import { Usuario } from '../../models/usuario.model';
 
@@ -45,7 +46,7 @@ export class CalendarioSemanalComponent implements OnInit {
   loading = signal<boolean>(false);
   
   // Configuración del calendario
-  diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+  diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   horas: string[] = [];
   horaInicio = 6; // 06:00
   horaFin = 22;   // 22:00
@@ -62,13 +63,24 @@ export class CalendarioSemanalComponent implements OnInit {
   constructor(
     private horariosService: HorariosService,
     private usuariosService: UsuariosService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    public authService: AuthService
   ) {
     this.generarHoras();
   }
 
   ngOnInit() {
-    this.cargarUsuarios();
+    // Si es estudiante, cargar directamente su calendario
+    if (this.authService.isEstudiante()) {
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser) {
+        this.usuarioSeleccionado.set(currentUser.id);
+        this.cargarHorarios();
+      }
+    } else {
+      // Si es admin, cargar todos los usuarios
+      this.cargarUsuarios();
+    }
   }
 
   // Genera el array de horas para el calendario
@@ -240,13 +252,13 @@ export class CalendarioSemanalComponent implements OnInit {
   // Obtiene el nombre corto del día
   obtenerDiaCorto(dia: string): string {
     const dias: { [key: string]: string } = {
-      'LUNES': 'LUN',
-      'MARTES': 'MAR',
-      'MIERCOLES': 'MIÉ',
-      'JUEVES': 'JUE',
-      'VIERNES': 'VIE',
-      'SABADO': 'SÁB',
-      'DOMINGO': 'DOM'
+      'Lunes': 'LUN',
+      'Martes': 'MAR',
+      'Miércoles': 'MIÉ',
+      'Jueves': 'JUE',
+      'Viernes': 'VIE',
+      'Sábado': 'SÁB',
+      'Domingo': 'DOM'
     };
     return dias[dia] || dia;
   }
