@@ -1,0 +1,279 @@
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
+import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+
+import { HorariosService } from '../../services/horarios.service';
+import { UsuariosService } from '../../services/usuarios.service';
+import { Horario } from '../../models/horario.model';
+import { Usuario } from '../../models/usuario.model';
+
+interface CalendarioEvento {
+  horario: Horario;
+  dia: string;
+  horaInicio: number;
+  horaFin: number;
+  top: number;
+  height: number;
+}
+
+@Component({
+  selector: 'app-calendario-semanal',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    SelectModule,
+    ButtonModule,
+    CardModule,
+    SkeletonModule,
+    TooltipModule,
+    InputTextModule,
+    IconFieldModule,
+    InputIconModule
+  ],
+  templateUrl: './calendario-semanal.component.html',
+  styleUrl: './calendario-semanal.component.scss'
+})
+export class CalendarioSemanalComponent implements OnInit {
+  // Señales de estado
+  usuarios = signal<Usuario[]>([]);
+  usuariosFiltrados = signal<Usuario[]>([]);
+  usuarioSeleccionado = signal<number | null>(null);
+  horarios = signal<Horario[]>([]);
+  loading = signal<boolean>(false);
+  searchText = signal<string>('');
+  
+  // Configuración del calendario
+  diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+  horas: string[] = [];
+  horaInicio = 6; // 06:00
+  horaFin = 22;   // 22:00
+  
+  // Navegación de semanas
+  semanaActual = new Date();
+  
+  // Colores pastel para las materias
+  coloresPastel = [
+    '#FFE5E5', '#E5F5FF', '#E5FFE5', '#FFF5E5', '#FFE5FF',
+    '#E5FFFF', '#FFF0E5', '#F0E5FF', '#FFFFE5', '#E5F0FF'
+  ];
+  
+  constructor(
+    private horariosService: HorariosService,
+    private usuariosService: UsuariosService
+  ) {
+    this.generarHoras();
+  }
+
+  ngOnInit() {
+    this.cargarUsuarios();
+  }
+
+  // Genera el array de horas para el calendario
+  generarHoras() {
+    this.horas = [];
+    for (let i = this.horaInicio; i <= this.horaFin; i++) {
+      this.horas.push(`${i.toString().padStart(2, '0')}:00`);
+    }
+  }
+
+  // Carga todos los usuarios
+  cargarUsuarios() {
+    this.loading.set(true);
+    this.usuariosService.getUsuarios().subscribe({
+      next: (usuarios) => {
+        this.usuarios.set(usuarios);
+        this.usuariosFiltrados.set(usuarios);
+        this.loading.set(false);
+        
+        // Seleccionar el primer usuario automáticamente
+        if (usuarios.length > 0) {
+          this.usuarioSeleccionado.set(usuarios[0].id);
+          this.cargarHorarios();
+        }
+      },
+      error: (err) => {
+        console.error('Error al cargar usuarios:', err);
+        this.loading.set(false);
+      }
+    });
+  }
+
+  // Filtrar usuarios por búsqueda
+  filtrarUsuarios() {
+    const search = this.searchText().toLowerCase().trim();
+    
+    if (!search) {
+      this.usuariosFiltrados.set(this.usuarios());
+      return;
+    }
+
+    const filtrados = this.usuarios().filter(usuario => 
+      usuario.nombre.toLowerCase().includes(search) ||
+      usuario.correo.toLowerCase().includes(search)
+    );
+    
+    this.usuariosFiltrados.set(filtrados);
+  }
+
+  // Evento cuando cambia el texto de búsqueda
+  onSearchChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.searchText.set(input.value);
+    this.filtrarUsuarios();
+  }
+
+  // Limpiar búsqueda
+  limpiarBusqueda() {
+    this.searchText.set('');
+    this.usuariosFiltrados.set(this.usuarios());
+  }
+
+  // Carga los horarios del usuario seleccionado
+  cargarHorarios() {
+    const usuarioId = this.usuarioSeleccionado();
+    if (!usuarioId) return;
+
+    this.loading.set(true);
+    this.horariosService.getHorariosByUsuario(usuarioId).subscribe({
+      next: (horarios) => {
+        this.horarios.set(horarios);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error al cargar horarios:', err);
+        this.loading.set(false);
+      }
+    });
+  }
+
+  // Evento cuando cambia el usuario seleccionado
+  onUsuarioChange() {
+    this.cargarHorarios();
+  }
+
+  // Obtiene los eventos para un día específico
+  obtenerEventosPorDia(dia: string): CalendarioEvento[] {
+    return this.horarios()
+      .filter(h => h.dia === dia)
+      .map(horario => this.convertirHorarioAEvento(horario, dia));
+  }
+
+  // Convierte un horario a un evento del calendario con posición
+  convertirHorarioAEvento(horario: Horario, dia: string): CalendarioEvento {
+    const [horaInicioHoras, horaInicioMinutos] = horario.hora_inicio.split(':').map(Number);
+    const [horaFinHoras, horaFinMinutos] = horario.hora_fin.split(':').map(Number);
+
+    const horaInicioDecimal = horaInicioHoras + horaInicioMinutos / 60;
+    const horaFinDecimal = horaFinHoras + horaFinMinutos / 60;
+
+    // Calcular posición y altura en porcentaje
+    const totalHoras = this.horaFin - this.horaInicio + 1;
+    const alturaHora = 60; // píxeles por hora
+    
+    const top = (horaInicioDecimal - this.horaInicio) * alturaHora;
+    const height = (horaFinDecimal - horaInicioDecimal) * alturaHora;
+
+    return {
+      horario,
+      dia,
+      horaInicio: horaInicioDecimal,
+      horaFin: horaFinDecimal,
+      top,
+      height
+    };
+  }
+
+  // Obtiene un color pastel basado en el id de la asignatura
+  obtenerColorAsignatura(idAsignatura: number): string {
+    const index = idAsignatura % this.coloresPastel.length;
+    return this.coloresPastel[index];
+  }
+
+  // Obtiene un color de borde más oscuro basado en el color de fondo
+  obtenerColorBorde(colorFondo: string): string {
+    // Convertir hex a RGB y oscurecer
+    const r = parseInt(colorFondo.slice(1, 3), 16);
+    const g = parseInt(colorFondo.slice(3, 5), 16);
+    const b = parseInt(colorFondo.slice(5, 7), 16);
+    
+    const factor = 0.7;
+    const nr = Math.floor(r * factor);
+    const ng = Math.floor(g * factor);
+    const nb = Math.floor(b * factor);
+    
+    return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
+  }
+
+  // Navegación: Semana anterior
+  semanaAnterior() {
+    const nueva = new Date(this.semanaActual);
+    nueva.setDate(nueva.getDate() - 7);
+    this.semanaActual = nueva;
+  }
+
+  // Navegación: Esta semana
+  estaSemana() {
+    this.semanaActual = new Date();
+  }
+
+  // Navegación: Siguiente semana
+  siguienteSemana() {
+    const nueva = new Date(this.semanaActual);
+    nueva.setDate(nueva.getDate() + 7);
+    this.semanaActual = nueva;
+  }
+
+  // Formatea el rango de la semana actual
+  obtenerRangoSemana(): string {
+    const inicio = this.obtenerLunesSemana(this.semanaActual);
+    const fin = new Date(inicio);
+    fin.setDate(fin.getDate() + 6);
+    
+    const opciones: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+    return `${inicio.toLocaleDateString('es-ES', opciones)} - ${fin.toLocaleDateString('es-ES', opciones)}`;
+  }
+
+  // Obtiene el lunes de la semana de una fecha
+  obtenerLunesSemana(fecha: Date): Date {
+    const dia = fecha.getDay();
+    const diff = fecha.getDate() - dia + (dia === 0 ? -6 : 1);
+    return new Date(fecha.setDate(diff));
+  }
+
+  // Formatea la hora para mostrar
+  formatearHora(hora: string): string {
+    return hora;
+  }
+
+  // Formatea el texto del evento
+  obtenerTextoEvento(evento: CalendarioEvento): string {
+    const nombreAsignatura = evento.horario.asignatura?.nombre || 'Sin asignatura';
+    const horaInicio = evento.horario.hora_inicio.substring(0, 5);
+    const horaFin = evento.horario.hora_fin.substring(0, 5);
+    return `${nombreAsignatura}\n${horaInicio} - ${horaFin}`;
+  }
+
+  // Obtiene el nombre corto del día
+  obtenerDiaCorto(dia: string): string {
+    const dias: { [key: string]: string } = {
+      'LUNES': 'LUN',
+      'MARTES': 'MAR',
+      'MIERCOLES': 'MIÉ',
+      'JUEVES': 'JUE',
+      'VIERNES': 'VIE',
+      'SABADO': 'SÁB',
+      'DOMINGO': 'DOM'
+    };
+    return dias[dia] || dia;
+  }
+}
+

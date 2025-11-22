@@ -1,0 +1,265 @@
+<div class="horarios-container">
+  <!-- Header -->
+  <div class="header-card">
+    <div class="header-content">
+      <div class="header-title">
+        <i class="pi pi-calendar-clock"></i>
+        <h1>Gestión de Horarios</h1>
+      </div>
+      <div class="header-actions">
+        <p-button
+          label="Nuevo Horario"
+          icon="pi pi-plus"
+          (onClick)="openCreateForm()"
+          [disabled]="loading"
+          severity="success"
+        />
+        <p-button
+          icon="pi pi-refresh"
+          (onClick)="refresh()"
+          [disabled]="loading"
+          [text]="true"
+          [rounded]="true"
+          pTooltip="Actualizar"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  @if (error) {
+    <div class="error-banner">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ error }}</span>
+      <p-button
+        label="Reintentar"
+        icon="pi pi-refresh"
+        severity="danger"
+        [text]="true"
+        (onClick)="refresh()"
+      />
+    </div>
+  }
+
+  <!-- Dialog para Crear/Editar -->
+  <p-dialog
+    [header]="editingHorario ? 'Editar Horario' : 'Nuevo Horario'"
+    [(visible)]="showForm"
+    [modal]="true"
+    [style]="{ width: '550px' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <form [formGroup]="horarioForm" (ngSubmit)="saveHorario()">
+      @if (error) {
+        <div class="form-error">
+          <i class="pi pi-times-circle"></i>
+          <span>{{ error }}</span>
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="id_usuario">Usuario *</label>
+        <p-select
+          inputId="id_usuario"
+          formControlName="id_usuario"
+          [options]="usuarios"
+          optionLabel="nombre"
+          optionValue="id"
+          placeholder="Selecciona un usuario"
+          [style]="{ width: '100%' }"
+          [class.error]="horarioForm.get('id_usuario')?.invalid && horarioForm.get('id_usuario')?.touched"
+        />
+        @if (horarioForm.get('id_usuario')?.invalid && horarioForm.get('id_usuario')?.touched) {
+          <small class="error-text">{{ getFieldError('id_usuario') }}</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="id_asignatura">Asignatura *</label>
+        <p-select
+          inputId="id_asignatura"
+          formControlName="id_asignatura"
+          [options]="asignaturas"
+          optionLabel="nombre"
+          optionValue="id"
+          placeholder="Selecciona una asignatura"
+          [style]="{ width: '100%' }"
+          [class.error]="horarioForm.get('id_asignatura')?.invalid && horarioForm.get('id_asignatura')?.touched"
+        />
+        @if (horarioForm.get('id_asignatura')?.invalid && horarioForm.get('id_asignatura')?.touched) {
+          <small class="error-text">{{ getFieldError('id_asignatura') }}</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="dia">Día de la Semana *</label>
+        <p-select
+          inputId="dia"
+          formControlName="dia"
+          [options]="diasSemana"
+          placeholder="Selecciona un día"
+          [style]="{ width: '100%' }"
+          [class.error]="horarioForm.get('dia')?.invalid && horarioForm.get('dia')?.touched"
+        >
+          <ng-template let-dia pTemplate="item">
+            {{ getDiaNombre(dia) }}
+          </ng-template>
+          <ng-template let-dia pTemplate="selectedItem">
+            {{ getDiaNombre(dia) }}
+          </ng-template>
+        </p-select>
+        @if (horarioForm.get('dia')?.invalid && horarioForm.get('dia')?.touched) {
+          <small class="error-text">{{ getFieldError('dia') }}</small>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="hora_inicio">Hora Inicio *</label>
+          <input
+            pInputText
+            type="time"
+            id="hora_inicio"
+            formControlName="hora_inicio"
+            [class.error]="horarioForm.get('hora_inicio')?.invalid && horarioForm.get('hora_inicio')?.touched"
+          />
+          @if (horarioForm.get('hora_inicio')?.invalid && horarioForm.get('hora_inicio')?.touched) {
+            <small class="error-text">{{ getFieldError('hora_inicio') }}</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="hora_fin">Hora Fin *</label>
+          <input
+            pInputText
+            type="time"
+            id="hora_fin"
+            formControlName="hora_fin"
+            [class.error]="horarioForm.get('hora_fin')?.invalid && horarioForm.get('hora_fin')?.touched"
+          />
+          @if (horarioForm.get('hora_fin')?.invalid && horarioForm.get('hora_fin')?.touched) {
+            <small class="error-text">{{ getFieldError('hora_fin') }}</small>
+          }
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [text]="true"
+          (onClick)="closeForm()"
+          type="button"
+        />
+        <p-button
+          [label]="editingHorario ? 'Actualizar' : 'Crear'"
+          icon="pi pi-check"
+          [loading]="loading"
+          type="submit"
+        />
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Loading State -->
+  @if (loading && horarios.length === 0) {
+    <div class="horarios-grid">
+      @for (item of [1,2,3,4,5,6]; track item) {
+        <div class="skeleton-card">
+          <p-skeleton width="100%" height="200px" borderRadius="12px" />
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @else if (!loading && horarios.length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-calendar-clock"></i>
+      <h3>No hay horarios registrados</h3>
+      <p>Comienza agregando tu primer horario</p>
+      <p-button
+        label="Crear Horario"
+        icon="pi pi-plus"
+        (onClick)="openCreateForm()"
+        severity="success"
+      />
+    </div>
+  }
+
+  <!-- Horarios Grid -->
+  @else {
+    <div class="horarios-grid">
+      @for (horario of horarios; track horario.id) {
+        <div class="horario-card">
+          <div class="card-header">
+            <div class="dia-badge">
+              <i class="pi pi-calendar"></i>
+              <span>{{ getDiaNombre(horario.dia) }}</span>
+            </div>
+            <div class="horario-time">
+              <i class="pi pi-clock"></i>
+              <span>{{ horario.hora_inicio.substring(0, 5) }} - {{ horario.hora_fin.substring(0, 5) }}</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="info-section">
+              <div class="info-item usuario">
+                <i class="pi pi-user"></i>
+                <div class="info-content">
+                  <span class="info-label">Usuario</span>
+                  <span class="info-value">{{ getUsuarioNombre(horario.id_usuario) }}</span>
+                </div>
+              </div>
+
+              <p-divider />
+
+              <div class="info-item asignatura">
+                <i class="pi pi-book"></i>
+                <div class="info-content">
+                  <span class="info-label">Asignatura</span>
+                  <span class="info-value">{{ getAsignaturaNombre(horario.id_asignatura) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="meta-info">
+              <div class="meta-item">
+                <i class="pi pi-hashtag"></i>
+                <span>ID: {{ horario.id }}</span>
+              </div>
+              @if (horario.created_at) {
+                <div class="meta-item">
+                  <i class="pi pi-calendar-plus"></i>
+                  <span>{{ formatDate(horario.created_at) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <p-button
+              label="Editar"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="openEditForm(horario)"
+              [disabled]="loading || deletingId === horario.id"
+            />
+            <p-button
+              label="Eliminar"
+              icon="pi pi-trash"
+              severity="danger"
+              [outlined]="true"
+              (onClick)="deleteHorario(horario.id)"
+              [loading]="deletingId === horario.id"
+              [disabled]="loading"
+            />
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

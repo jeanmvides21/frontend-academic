@@ -1,0 +1,450 @@
+// Variables de diseño
+$primary-color: #6366f1;
+$secondary-color: #8b5cf6;
+$background-light: #f8fafc;
+$background-white: #ffffff;
+$border-color: #e2e8f0;
+$text-primary: #1e293b;
+$text-secondary: #64748b;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$border-radius: 12px;
+$transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+.calendario-container {
+  padding: 2rem;
+  background-color: $background-light;
+  min-height: 100vh;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Header
+.calendario-header {
+  background: $background-white;
+  padding: 1.5rem 2rem;
+  border-radius: $border-radius;
+  box-shadow: $shadow-md;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    i {
+      font-size: 1.75rem;
+      color: $primary-color;
+    }
+
+    h2 {
+      margin: 0;
+      color: $text-primary;
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+  }
+
+  .header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .usuario-buscador {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      label {
+        font-weight: 600;
+        color: $text-primary;
+        white-space: nowrap;
+      }
+
+      ::ng-deep {
+        .p-iconfield {
+          position: relative;
+        }
+      }
+    }
+
+    .usuario-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      label {
+        font-weight: 600;
+        color: $text-primary;
+        white-space: nowrap;
+      }
+    }
+
+    .semana-navegacion {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+  }
+
+}
+
+// Wrapper del calendario
+.calendario-wrapper {
+  background: $background-white;
+  border-radius: $border-radius;
+  box-shadow: $shadow-md;
+  overflow: hidden;
+}
+
+// Grid del calendario
+.calendario-grid {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  overflow-x: auto;
+  position: relative;
+}
+
+// Columna de horas
+.horas-columna {
+  border-right: 2px solid $border-color;
+  background: $background-light;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+
+  .hora-header {
+    height: 60px;
+    border-bottom: 2px solid $border-color;
+  }
+
+  .hora-celda {
+    height: 60px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 0.5rem;
+    border-bottom: 1px solid $border-color;
+
+    .hora-texto {
+      font-size: 0.75rem;
+      color: $text-secondary;
+      font-weight: 600;
+      background: $background-white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      box-shadow: $shadow-sm;
+    }
+  }
+}
+
+// Columna de día
+.dia-columna {
+  position: relative;
+  border-right: 1px solid $border-color;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba($primary-color, 0.02);
+  }
+
+  &.weekend {
+    background-color: rgba($secondary-color, 0.03);
+  }
+
+  .dia-header {
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px solid $border-color;
+    background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+    color: white;
+    font-weight: 700;
+    gap: 0.25rem;
+
+    .dia-nombre {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .dia-nombre-completo {
+      font-size: 0.7rem;
+      opacity: 0.9;
+      display: none;
+    }
+  }
+
+  .dia-grid {
+    position: relative;
+
+    .hora-slot {
+      height: 60px;
+      border-bottom: 1px solid $border-color;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: rgba($primary-color, 0.05);
+      }
+    }
+  }
+}
+
+// Contenedor de eventos
+.eventos-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+// Estilos del evento
+.evento {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  padding: 0.5rem;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: $shadow-sm;
+  transition: $transition;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+
+  &:hover {
+    transform: translateX(2px) scale(1.02);
+    box-shadow: $shadow-lg;
+    z-index: 5;
+  }
+
+  .evento-contenido {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .evento-titulo {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: $text-primary;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .evento-hora {
+      font-size: 0.75rem;
+      color: $text-secondary;
+      font-weight: 500;
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Footer
+.calendario-footer {
+  background: $background-white;
+  padding: 1rem 2rem;
+  border-radius: $border-radius;
+  box-shadow: $shadow-md;
+  margin-top: 1.5rem;
+
+  .footer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: $text-secondary;
+    font-size: 0.9rem;
+
+    i {
+      color: $primary-color;
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    color: $text-secondary;
+
+    i {
+      font-size: 3rem;
+      opacity: 0.5;
+    }
+
+    p {
+      margin: 0;
+      font-size: 1rem;
+    }
+  }
+}
+
+// Skeleton
+.skeleton-container {
+  padding: 2rem;
+}
+
+// Responsive
+@media (max-width: 1024px) {
+  .calendario-container {
+    padding: 1rem;
+  }
+
+  .calendario-header {
+    padding: 1rem;
+
+    .header-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  .calendario-grid {
+    grid-template-columns: 60px repeat(7, minmax(100px, 1fr));
+  }
+
+  .horas-columna {
+    .hora-celda .hora-texto {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.3rem;
+    }
+  }
+
+  .dia-columna .dia-header {
+    .dia-nombre {
+      font-size: 0.75rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .calendario-container {
+    padding: 0.5rem;
+  }
+
+  .calendario-header {
+    padding: 1rem;
+
+    .header-title h2 {
+      font-size: 1.25rem;
+    }
+
+    .header-controls {
+      gap: 0.75rem;
+
+      .usuario-buscador {
+        width: 100%;
+        flex-wrap: wrap;
+
+        input {
+          width: 100% !important;
+        }
+      }
+
+      .usuario-selector {
+        width: 100%;
+      }
+    }
+
+    .semana-navegacion {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .calendario-grid {
+    grid-template-columns: 50px repeat(7, minmax(80px, 1fr));
+    font-size: 0.8rem;
+  }
+
+  .evento {
+    padding: 0.3rem;
+
+    .evento-contenido {
+      .evento-titulo {
+        font-size: 0.7rem;
+      }
+
+      .evento-hora {
+        font-size: 0.65rem;
+      }
+    }
+  }
+
+  .dia-columna {
+    .dia-header {
+      .dia-nombre-completo {
+        display: none;
+      }
+    }
+
+    .dia-grid .hora-slot {
+      height: 50px;
+    }
+  }
+
+  .horas-columna .hora-celda {
+    height: 50px;
+  }
+}
+
+// Mejoras de accesibilidad
+:focus-visible {
+  outline: 2px solid $primary-color;
+  outline-offset: 2px;
+}
+
+// Scrollbar personalizado
+.calendario-grid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.calendario-grid::-webkit-scrollbar-track {
+  background: $background-light;
+  border-radius: 4px;
+}
+
+.calendario-grid::-webkit-scrollbar-thumb {
+  background: $border-color;
+  border-radius: 4px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: $text-secondary;
+  }
+}
+

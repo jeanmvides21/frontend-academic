@@ -1,0 +1,212 @@
+<div class="usuarios-container">
+  <!-- Header -->
+  <div class="header-card">
+    <div class="header-content">
+      <div class="header-title">
+        <i class="pi pi-users"></i>
+        <h1>Gestión de Usuarios</h1>
+      </div>
+      <div class="header-actions">
+        <p-button
+          label="Nuevo Usuario"
+          icon="pi pi-plus"
+          (onClick)="openCreateForm()"
+          [disabled]="loading"
+          severity="success"
+        />
+        <p-button
+          icon="pi pi-refresh"
+          (onClick)="refresh()"
+          [disabled]="loading"
+          [text]="true"
+          [rounded]="true"
+          pTooltip="Actualizar"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  @if (error) {
+    <div class="error-banner">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ error }}</span>
+      <p-button
+        label="Reintentar"
+        icon="pi pi-refresh"
+        severity="danger"
+        [text]="true"
+        (onClick)="refresh()"
+      />
+    </div>
+  }
+
+  <!-- Dialog para Crear/Editar -->
+  <p-dialog
+    [header]="editingUsuario ? 'Editar Usuario' : 'Nuevo Usuario'"
+    [(visible)]="showForm"
+    [modal]="true"
+    [style]="{ width: '500px' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <form [formGroup]="usuarioForm" (ngSubmit)="saveUsuario()">
+      @if (error) {
+        <div class="form-error">
+          <i class="pi pi-times-circle"></i>
+          <span>{{ error }}</span>
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="nombre">Nombre Completo *</label>
+        <input
+          pInputText
+          id="nombre"
+          formControlName="nombre"
+          placeholder="Ej: Juan Pérez"
+          [class.error]="usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched"
+        />
+        @if (usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched) {
+          <small class="error-text">{{ getFieldError('nombre') }}</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="correo">Correo Electrónico *</label>
+        <input
+          pInputText
+          id="correo"
+          type="email"
+          formControlName="correo"
+          placeholder="ejemplo@correo.com"
+          [class.error]="usuarioForm.get('correo')?.invalid && usuarioForm.get('correo')?.touched"
+        />
+        @if (usuarioForm.get('correo')?.invalid && usuarioForm.get('correo')?.touched) {
+          <small class="error-text">{{ getFieldError('correo') }}</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="telefono">Teléfono</label>
+        <input
+          pInputText
+          id="telefono"
+          formControlName="telefono"
+          placeholder="Ej: +57 300 123 4567"
+        />
+      </div>
+
+      <div class="form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [text]="true"
+          (onClick)="closeForm()"
+          type="button"
+        />
+        <p-button
+          [label]="editingUsuario ? 'Actualizar' : 'Crear'"
+          icon="pi pi-check"
+          [loading]="loading"
+          type="submit"
+        />
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Loading State -->
+  @if (loading && usuarios.length === 0) {
+    <div class="usuarios-grid">
+      @for (item of [1,2,3,4]; track item) {
+        <div class="skeleton-card">
+          <p-skeleton width="100%" height="200px" borderRadius="12px" />
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @else if (!loading && usuarios.length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-users"></i>
+      <h3>No hay usuarios registrados</h3>
+      <p>Comienza agregando tu primer usuario</p>
+      <p-button
+        label="Crear Usuario"
+        icon="pi pi-plus"
+        (onClick)="openCreateForm()"
+        severity="success"
+      />
+    </div>
+  }
+
+  <!-- Usuarios Grid -->
+  @else {
+    <div class="usuarios-grid">
+      @for (usuario of usuarios; track usuario.id) {
+        <div class="usuario-card">
+          <div class="card-header">
+            <div class="usuario-avatar">
+              <span>{{ usuario.nombre.charAt(0).toUpperCase() }}</span>
+            </div>
+            <div class="usuario-info">
+              <h3>{{ usuario.nombre }}</h3>
+              <p-tag value="ID: {{ usuario.id }}" severity="secondary" />
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="info-item">
+              <i class="pi pi-envelope"></i>
+              <div class="info-content">
+                <span class="info-label">Correo</span>
+                <span class="info-value">{{ usuario.correo }}</span>
+              </div>
+            </div>
+
+            @if (usuario.telefono) {
+              <div class="info-item">
+                <i class="pi pi-phone"></i>
+                <div class="info-content">
+                  <span class="info-label">Teléfono</span>
+                  <span class="info-value">{{ usuario.telefono }}</span>
+                </div>
+              </div>
+            }
+
+            @if (usuario.created_at) {
+              <div class="info-item">
+                <i class="pi pi-calendar"></i>
+                <div class="info-content">
+                  <span class="info-label">Registrado</span>
+                  <span class="info-value">{{ formatDate(usuario.created_at) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="card-actions">
+            <p-button
+              label="Editar"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="openEditForm(usuario)"
+              [disabled]="loading || deletingId === usuario.id"
+            />
+            <p-button
+              label="Eliminar"
+              icon="pi pi-trash"
+              severity="danger"
+              [outlined]="true"
+              (onClick)="deleteUsuario(usuario.id)"
+              [loading]="deletingId === usuario.id"
+              [disabled]="loading"
+            />
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

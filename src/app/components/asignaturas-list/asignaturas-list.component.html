@@ -1,0 +1,225 @@
+<div class="asignaturas-container">
+  <!-- Header -->
+  <div class="header-card">
+    <div class="header-content">
+      <div class="header-title">
+        <i class="pi pi-book"></i>
+        <h1>Gestión de Asignaturas</h1>
+      </div>
+      <div class="header-actions">
+        <p-button
+          label="Nueva Asignatura"
+          icon="pi pi-plus"
+          (onClick)="openCreateForm()"
+          [disabled]="loading"
+          severity="success"
+        />
+        <p-button
+          icon="pi pi-refresh"
+          (onClick)="refresh()"
+          [disabled]="loading"
+          [text]="true"
+          [rounded]="true"
+          pTooltip="Actualizar"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  @if (error) {
+    <div class="error-banner">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ error }}</span>
+      <p-button
+        label="Reintentar"
+        icon="pi pi-refresh"
+        severity="danger"
+        [text]="true"
+        (onClick)="refresh()"
+      />
+    </div>
+  }
+
+  <!-- Dialog para Crear/Editar -->
+  <p-dialog
+    [header]="editingAsignatura ? 'Editar Asignatura' : 'Nueva Asignatura'"
+    [(visible)]="showForm"
+    [modal]="true"
+    [style]="{ width: '550px' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <form [formGroup]="asignaturaForm" (ngSubmit)="saveAsignatura()">
+      @if (error) {
+        <div class="form-error">
+          <i class="pi pi-times-circle"></i>
+          <span>{{ error }}</span>
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="nombre">Nombre de la Asignatura *</label>
+        <input
+          pInputText
+          id="nombre"
+          formControlName="nombre"
+          placeholder="Ej: Matemáticas Avanzadas"
+          [class.error]="asignaturaForm.get('nombre')?.invalid && asignaturaForm.get('nombre')?.touched"
+        />
+        @if (asignaturaForm.get('nombre')?.invalid && asignaturaForm.get('nombre')?.touched) {
+          <small class="error-text">{{ getFieldError('nombre') }}</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="descripcion">Descripción</label>
+        <textarea
+          pInputTextarea
+          id="descripcion"
+          formControlName="descripcion"
+          placeholder="Descripción opcional de la asignatura"
+          rows="3"
+          [autoResize]="true"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="maxclasessemana">Máximo de Clases por Semana *</label>
+        <p-inputNumber
+          inputId="maxclasessemana"
+          formControlName="maxclasessemana"
+          [min]="1"
+          [max]="10"
+          [showButtons]="true"
+          buttonLayout="horizontal"
+          spinnerMode="horizontal"
+          decrementButtonClass="p-button-secondary"
+          incrementButtonClass="p-button-secondary"
+          incrementButtonIcon="pi pi-plus"
+          decrementButtonIcon="pi pi-minus"
+          placeholder="1-10"
+        />
+        @if (asignaturaForm.get('maxclasessemana')?.invalid && asignaturaForm.get('maxclasessemana')?.touched) {
+          <small class="error-text">{{ getFieldError('maxclasessemana') }}</small>
+        }
+      </div>
+
+      <div class="form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [text]="true"
+          (onClick)="closeForm()"
+          type="button"
+        />
+        <p-button
+          [label]="editingAsignatura ? 'Actualizar' : 'Crear'"
+          icon="pi pi-check"
+          [loading]="loading"
+          type="submit"
+        />
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Loading State -->
+  @if (loading && asignaturas.length === 0) {
+    <div class="asignaturas-grid">
+      @for (item of [1,2,3,4,5,6]; track item) {
+        <div class="skeleton-card">
+          <p-skeleton width="100%" height="220px" borderRadius="12px" />
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @else if (!loading && asignaturas.length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-book"></i>
+      <h3>No hay asignaturas registradas</h3>
+      <p>Comienza agregando tu primera asignatura</p>
+      <p-button
+        label="Crear Asignatura"
+        icon="pi pi-plus"
+        (onClick)="openCreateForm()"
+        severity="success"
+      />
+    </div>
+  }
+
+  <!-- Asignaturas Grid -->
+  @else {
+    <div class="asignaturas-grid">
+      @for (asignatura of asignaturas; track asignatura.id) {
+        <div class="asignatura-card">
+          <div class="card-header">
+            <div class="asignatura-icon">
+              <i class="pi pi-book"></i>
+            </div>
+            <div class="asignatura-badge">
+              <p-tag 
+                [value]="asignatura.maxclasessemana + ' clase' + (asignatura.maxclasessemana > 1 ? 's' : '') + '/sem'"
+                severity="info"
+                [rounded]="true"
+              />
+            </div>
+          </div>
+
+          <div class="card-body">
+            <h3 class="asignatura-nombre">{{ asignatura.nombre }}</h3>
+            
+            @if (asignatura.descripcion) {
+              <p class="asignatura-descripcion">{{ asignatura.descripcion }}</p>
+            } @else {
+              <p class="asignatura-descripcion no-descripcion">Sin descripción</p>
+            }
+
+            <div class="asignatura-details">
+              <div class="detail-item">
+                <i class="pi pi-hashtag"></i>
+                <span class="detail-label">ID:</span>
+                <span class="detail-value">{{ asignatura.id }}</span>
+              </div>
+
+              <div class="detail-item">
+                <i class="pi pi-calendar-clock"></i>
+                <span class="detail-label">Max Clases:</span>
+                <span class="detail-value">{{ asignatura.maxclasessemana }} por semana</span>
+              </div>
+
+              @if (asignatura.created_at) {
+                <div class="detail-item">
+                  <i class="pi pi-calendar"></i>
+                  <span class="detail-label">Creada:</span>
+                  <span class="detail-value">{{ formatDate(asignatura.created_at) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <p-button
+              label="Editar"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="openEditForm(asignatura)"
+              [disabled]="loading || deletingId === asignatura.id"
+            />
+            <p-button
+              label="Eliminar"
+              icon="pi pi-trash"
+              severity="danger"
+              [outlined]="true"
+              (onClick)="deleteAsignatura(asignatura.id)"
+              [loading]="deletingId === asignatura.id"
+              [disabled]="loading"
+            />
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,129 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Brand -->
+    <div class="navbar-brand">
+      <div class="brand-icon">
+        <i class="pi pi-graduation-cap"></i>
+      </div>
+      <div class="brand-text">
+        <h1>Gestión Académica</h1>
+        <span class="brand-subtitle">Sistema Integral</span>
+      </div>
+    </div>
+
+    <!-- Desktop Menu -->
+    <ul class="navbar-menu desktop-menu">
+      <li>
+        <a 
+          routerLink="/calendario" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: false}"
+          class="nav-link"
+        >
+          <i class="pi pi-calendar"></i>
+          <span>Calendario</span>
+        </a>
+      </li>
+      <li>
+        <a 
+          routerLink="/usuarios" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: false}"
+          class="nav-link"
+        >
+          <i class="pi pi-users"></i>
+          <span>Usuarios</span>
+        </a>
+      </li>
+      <li>
+        <a 
+          routerLink="/asignaturas" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: false}"
+          class="nav-link"
+        >
+          <i class="pi pi-book"></i>
+          <span>Asignaturas</span>
+        </a>
+      </li>
+      <li>
+        <a 
+          routerLink="/horarios" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: false}"
+          class="nav-link"
+        >
+          <i class="pi pi-calendar-clock"></i>
+          <span>Horarios</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Mobile Menu Button -->
+    <button 
+      class="mobile-menu-button"
+      (click)="toggleMobileMenu()"
+      [class.active]="mobileMenuOpen"
+    >
+      <i [class]="mobileMenuOpen ? 'pi pi-times' : 'pi pi-bars'"></i>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.open]="mobileMenuOpen">
+    <ul class="mobile-menu-list">
+      <li>
+        <a 
+          routerLink="/calendario" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: false}"
+          class="mobile-nav-link"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="pi pi-calendar"></i>
+          <span>Calendario</span>
+          <i class="pi pi-chevron-right arrow"></i>
+        </a>
+      </li>
+      <li>
+        <a 
+          routerLink="/usuarios" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: false}"
+          class="mobile-nav-link"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="pi pi-users"></i>
+          <span>Usuarios</span>
+          <i class="pi pi-chevron-right arrow"></i>
+        </a>
+      </li>
+      <li>
+        <a 
+          routerLink="/asignaturas" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: false}"
+          class="mobile-nav-link"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="pi pi-book"></i>
+          <span>Asignaturas</span>
+          <i class="pi pi-chevron-right arrow"></i>
+        </a>
+      </li>
+      <li>
+        <a 
+          routerLink="/horarios" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{exact: false}"
+          class="mobile-nav-link"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="pi pi-calendar-clock"></i>
+          <span>Horarios</span>
+          <i class="pi pi-chevron-right arrow"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>

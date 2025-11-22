@@ -1,0 +1,155 @@
+<div class="calendario-container">
+  <!-- Header del Calendario -->
+  <div class="calendario-header">
+    <div class="header-title">
+      <i class="pi pi-calendar"></i>
+      <h2>Calendario Semanal</h2>
+    </div>
+    
+    <div class="header-controls">
+      <!-- Buscador de Usuario -->
+      <div class="usuario-buscador">
+        <label for="buscar">Buscar Usuario:</label>
+        <p-iconfield iconPosition="left">
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            pInputText
+            id="buscar"
+            type="text"
+            placeholder="Buscar por nombre o correo..."
+            [value]="searchText()"
+            (input)="onSearchChange($event)"
+            [style]="{ width: '300px' }"
+          />
+        </p-iconfield>
+        @if (searchText()) {
+          <p-button
+            icon="pi pi-times"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            (onClick)="limpiarBusqueda()"
+            pTooltip="Limpiar búsqueda"
+          />
+        }
+      </div>
+      
+      <!-- Selector de Usuario -->
+      <div class="usuario-selector">
+        <label for="usuario">Usuario:</label>
+        <p-select
+          id="usuario"
+          [(ngModel)]="usuarioSeleccionado"
+          [options]="usuariosFiltrados()"
+          optionLabel="nombre"
+          optionValue="id"
+          placeholder="Seleccionar usuario"
+          (onChange)="onUsuarioChange()"
+          [style]="{ minWidth: '250px' }"
+          [filter]="true"
+          filterPlaceholder="Filtrar..."
+        />
+      </div>
+      
+      <!-- Navegación de Semanas -->
+      <div class="semana-navegacion">
+        <p-button
+          icon="pi pi-chevron-left"
+          severity="secondary"
+          [text]="true"
+          [rounded]="true"
+          (onClick)="semanaAnterior()"
+          pTooltip="Semana anterior"
+        />
+        <p-button
+          icon="pi pi-chevron-right"
+          severity="secondary"
+          [text]="true"
+          [rounded]="true"
+          (onClick)="siguienteSemana()"
+          pTooltip="Siguiente semana"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendario Grid -->
+  <div class="calendario-wrapper">
+    @if (loading()) {
+      <!-- Skeleton Loader -->
+      <div class="skeleton-container">
+        <p-skeleton height="400px" borderRadius="8px" />
+      </div>
+    } @else {
+      <div class="calendario-grid">
+        <!-- Columna de Horas -->
+        <div class="horas-columna">
+          <div class="hora-header"></div>
+          @for (hora of horas; track hora) {
+            <div class="hora-celda">
+              <span class="hora-texto">{{ formatearHora(hora) }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Columnas de Días -->
+        @for (dia of diasSemana; track dia; let i = $index) {
+          <div class="dia-columna" [class.weekend]="i >= 5">
+            <!-- Header del Día -->
+            <div class="dia-header">
+              <div class="dia-nombre">{{ obtenerDiaCorto(dia) }}</div>
+              <div class="dia-nombre-completo">{{ dia }}</div>
+            </div>
+
+            <!-- Grid de Horas del Día -->
+            <div class="dia-grid">
+              @for (hora of horas; track hora) {
+                <div class="hora-slot"></div>
+              }
+
+              <!-- Eventos del Día -->
+              <div class="eventos-container">
+                @for (evento of obtenerEventosPorDia(dia); track evento.horario.id) {
+                  <div
+                    class="evento"
+                    [style.top.px]="evento.top"
+                    [style.height.px]="evento.height"
+                    [style.background-color]="obtenerColorAsignatura(evento.horario.id_asignatura)"
+                    [style.border-left-color]="obtenerColorBorde(obtenerColorAsignatura(evento.horario.id_asignatura))"
+                    [pTooltip]="obtenerTextoEvento(evento)"
+                    tooltipPosition="top"
+                  >
+                    <div class="evento-contenido">
+                      <div class="evento-titulo">
+                        {{ evento.horario.asignatura?.nombre || 'Sin asignatura' }}
+                      </div>
+                      <div class="evento-hora">
+                        {{ evento.horario.hora_inicio.substring(0, 5) }} - {{ evento.horario.hora_fin.substring(0, 5) }}
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Footer con información -->
+  <div class="calendario-footer">
+    @if (!loading() && horarios().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-calendar-times"></i>
+        <p>No hay horarios para este usuario</p>
+      </div>
+    } @else if (!loading()) {
+      <div class="footer-info">
+        <i class="pi pi-info-circle"></i>
+        <span>Mostrando {{ horarios().length }} evento(s) de horario</span>
+      </div>
+    }
+  </div>
+</div>
+
