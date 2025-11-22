@@ -58,7 +58,7 @@
             type="submit"
             label="Iniciar Sesión"
             icon="pi pi-sign-in"
-            [loading]="loading"
+            [loading]="loading$ | async"
             styleClass="w-full"
           />
         </div>

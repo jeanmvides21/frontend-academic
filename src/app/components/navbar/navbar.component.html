@@ -1,59 +1,26 @@
-@if (authService.isLoggedIn()) {
+@if (authService.isLoggedIn() | async) {
   <nav class="navbar">
     <div class="navbar-container">
       <!-- Brand -->
       <div class="navbar-brand">
         <div class="brand-text">
           <h1>Gestión Académica</h1>
-          <span class="brand-subtitle">{{ userRole }}</span>
+          <span class="brand-subtitle">{{ userRole$ | async }}</span>
         </div>
       </div>
 
       <!-- Desktop Menu -->
       <ul class="navbar-menu desktop-menu">
-        <li>
-          <a 
-            routerLink="/calendario" 
-            routerLinkActive="active" 
-            [routerLinkActiveOptions]="{exact: false}"
-            class="nav-link"
-          >
-            <i class="pi pi-calendar"></i>
-            <span>{{ authService.isEstudiante() ? 'Mi Calendario' : 'Calendario' }}</span>
-          </a>
-        </li>
-        @if (authService.isAdmin()) {
+        @for (item of menuItems$ | async; track item.label) {
           <li>
             <a 
-              routerLink="/usuarios" 
+              [routerLink]="item.routerLink" 
               routerLinkActive="active" 
               [routerLinkActiveOptions]="{exact: false}"
               class="nav-link"
             >
-              <i class="pi pi-users"></i>
-              <span>Estudiantes</span>
-            </a>
-          </li>
-          <li>
-            <a 
-              routerLink="/asignaturas" 
-              routerLinkActive="active" 
-              [routerLinkActiveOptions]="{exact: false}"
-              class="nav-link"
-            >
-              <i class="pi pi-book"></i>
-              <span>Asignaturas</span>
-            </a>
-          </li>
-          <li>
-            <a 
-              routerLink="/horarios" 
-              routerLinkActive="active" 
-              [routerLinkActiveOptions]="{exact: false}"
-              class="nav-link"
-            >
-              <i class="pi pi-calendar-clock"></i>
-              <span>Horarios</span>
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
             </a>
           </li>
         }
@@ -83,62 +50,23 @@
       <div class="mobile-user-info">
         <i class="pi pi-user"></i>
         <div class="user-details">
-          <span class="user-name">{{ currentUserName }}</span>
-          <span class="user-role">{{ userRole }}</span>
+          <span class="user-name">{{ currentUserName$ | async }}</span>
+          <span class="user-role">{{ userRole$ | async }}</span>
         </div>
       </div>
 
       <ul class="mobile-menu-list">
-        <li>
-          <a 
-            routerLink="/calendario" 
-            routerLinkActive="active" 
-            [routerLinkActiveOptions]="{exact: false}"
-            class="mobile-nav-link"
-            (click)="toggleMobileMenu()"
-          >
-            <i class="pi pi-calendar"></i>
-            <span>{{ authService.isEstudiante() ? 'Mi Calendario' : 'Calendario' }}</span>
-            <i class="pi pi-chevron-right arrow"></i>
-          </a>
-        </li>
-        @if (authService.isAdmin()) {
+        @for (item of menuItems$ | async; track item.label) {
           <li>
             <a 
-              routerLink="/usuarios" 
+              [routerLink]="item.routerLink" 
               routerLinkActive="active" 
               [routerLinkActiveOptions]="{exact: false}"
               class="mobile-nav-link"
               (click)="toggleMobileMenu()"
             >
-              <i class="pi pi-users"></i>
-              <span>Estudiantes</span>
-              <i class="pi pi-chevron-right arrow"></i>
-            </a>
-          </li>
-          <li>
-            <a 
-              routerLink="/asignaturas" 
-              routerLinkActive="active" 
-              [routerLinkActiveOptions]="{exact: false}"
-              class="mobile-nav-link"
-              (click)="toggleMobileMenu()"
-            >
-              <i class="pi pi-book"></i>
-              <span>Asignaturas</span>
-              <i class="pi pi-chevron-right arrow"></i>
-            </a>
-          </li>
-          <li>
-            <a 
-              routerLink="/horarios" 
-              routerLinkActive="active" 
-              [routerLinkActiveOptions]="{exact: false}"
-              class="mobile-nav-link"
-              (click)="toggleMobileMenu()"
-            >
-              <i class="pi pi-calendar-clock"></i>
-              <span>Horarios</span>
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
               <i class="pi pi-chevron-right arrow"></i>
             </a>
           </li>

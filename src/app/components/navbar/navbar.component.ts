@@ -1,11 +1,16 @@
-import { Component, OnInit, DoCheck } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { Observable, Subject, combineLatest } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../services/auth.service';
+import { AppState } from '../../store/app.state';
+import { selectCurrentUser, selectIsAdmin, selectIsEstudiante } from '../../store/auth/auth.selectors';
 
 @Component({
   selector: 'app-navbar',
@@ -14,69 +19,77 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'
 })
-export class NavbarComponent implements OnInit, DoCheck {
+export class NavbarComponent implements OnInit, OnDestroy {
   mobileMenuOpen = false;
-  menuItems: MenuItem[] = [];
+  menuItems$: Observable<MenuItem[]>;
+  currentUser$: Observable<any>;
+  currentUserName$: Observable<string>;
+  userRole$: Observable<string>;
+  private destroy$ = new Subject<void>();
 
-  constructor(public authService: AuthService) {
-    // Actualizar menú cuando el usuario cambie
-    console.log('🏗️ NavbarComponent constructor');
+  constructor(
+    public authService: AuthService,
+    private store: Store<AppState>
+  ) {
+    this.currentUser$ = this.store.select(selectCurrentUser);
+    this.currentUserName$ = this.currentUser$.pipe(
+      map(user => user?.nombre || 'Usuario')
+    );
+    this.userRole$ = this.currentUser$.pipe(
+      map(user => user?.rol === 'admin' ? 'Administrador' : 'Estudiante')
+    );
+
+    // Crear menú basado en el rol del usuario
+    this.menuItems$ = combineLatest([
+      this.store.select(selectIsAdmin),
+      this.store.select(selectIsEstudiante)
+    ]).pipe(
+      map(([isAdmin, isEstudiante]) => {
+        if (isAdmin) {
+          return [
+            {
+              label: 'Calendario',
+              icon: 'pi pi-calendar',
+              routerLink: '/calendario'
+            },
+            {
+              label: 'Estudiantes',
+              icon: 'pi pi-users',
+              routerLink: '/usuarios'
+            },
+            {
+              label: 'Asignaturas',
+              icon: 'pi pi-book',
+              routerLink: '/asignaturas'
+            },
+            {
+              label: 'Horarios',
+              icon: 'pi pi-calendar-clock',
+              routerLink: '/horarios'
+            }
+          ];
+        } else if (isEstudiante) {
+          return [
+            {
+              label: 'Mi Calendario',
+              icon: 'pi pi-calendar',
+              routerLink: '/calendario'
+            }
+          ];
+        }
+        return [];
+      })
+    );
   }
 
   ngOnInit() {
-    console.log('📋 NavbarComponent ngOnInit - Usuario actual:', this.authService.getCurrentUser());
-    this.updateMenuItems();
+    // Suscripción para mantener el menú actualizado
+    this.menuItems$.pipe(takeUntil(this.destroy$)).subscribe();
   }
 
-  ngDoCheck() {
-    // Verificar si el usuario cambió y actualizar el menú
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser && this.menuItems.length === 0) {
-      console.log('🔄 Usuario detectado, actualizando menú...');
-      this.updateMenuItems();
-    }
-  }
-
-  updateMenuItems() {
-    const currentUser = this.authService.getCurrentUser();
-    console.log('🔄 Actualizando menú - Usuario:', currentUser?.nombre, '- Rol:', currentUser?.rol);
-    
-    if (this.authService.isAdmin()) {
-      console.log('✅ Usuario es ADMIN - Mostrando menú completo');
-      // Admin ve todo
-      this.menuItems = [
-        {
-          label: 'Calendario',
-          icon: 'pi pi-calendar',
-          routerLink: '/calendario'
-        },
-        {
-          label: 'Estudiantes',
-          icon: 'pi pi-users',
-          routerLink: '/usuarios'
-        },
-        {
-          label: 'Asignaturas',
-          icon: 'pi pi-book',
-          routerLink: '/asignaturas'
-        },
-        {
-          label: 'Horarios',
-          icon: 'pi pi-calendar-clock',
-          routerLink: '/horarios'
-        }
-      ];
-    } else if (this.authService.isEstudiante()) {
-      console.log('✅ Usuario es ESTUDIANTE - Mostrando solo calendario');
-      // Estudiante solo ve calendario
-      this.menuItems = [
-        {
-          label: 'Mi Calendario',
-          icon: 'pi pi-calendar',
-          routerLink: '/calendario'
-        }
-      ];
-    }
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   logout() {
@@ -85,15 +98,6 @@ export class NavbarComponent implements OnInit, DoCheck {
 
   toggleMobileMenu() {
     this.mobileMenuOpen = !this.mobileMenuOpen;
-  }
-
-  get currentUserName(): string {
-    return this.authService.getCurrentUser()?.nombre || 'Usuario';
-  }
-
-  get userRole(): string {
-    const user = this.authService.getCurrentUser();
-    return user?.rol === 'admin' ? 'Administrador' : 'Estudiante';
   }
 }
 

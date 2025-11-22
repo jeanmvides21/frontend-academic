@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
@@ -7,6 +7,8 @@ import { CardModule } from 'primeng/card';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { HorariosService } from '../../services/horarios.service';
 import { UsuariosService } from '../../services/usuarios.service';
@@ -38,12 +40,13 @@ interface CalendarioEvento {
   templateUrl: './calendario-semanal.component.html',
   styleUrl: './calendario-semanal.component.scss'
 })
-export class CalendarioSemanalComponent implements OnInit {
+export class CalendarioSemanalComponent implements OnInit, OnDestroy {
   // Señales de estado
   usuarios = signal<Usuario[]>([]);
   usuarioSeleccionado = signal<number | null>(null);
   horarios = signal<Horario[]>([]);
   loading = signal<boolean>(false);
+  private destroy$ = new Subject<void>();
   
   // Configuración del calendario
   diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -71,16 +74,25 @@ export class CalendarioSemanalComponent implements OnInit {
 
   ngOnInit() {
     // Si es estudiante, cargar directamente su calendario
-    if (this.authService.isEstudiante()) {
-      const currentUser = this.authService.getCurrentUser();
-      if (currentUser) {
-        this.usuarioSeleccionado.set(currentUser.id);
-        this.cargarHorarios();
-      }
-    } else {
-      // Si es admin, cargar todos los usuarios
-      this.cargarUsuarios();
-    }
+    this.authService.isEstudiante()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isEstudiante => {
+        if (isEstudiante) {
+          const currentUser = this.authService.getCurrentUserValue();
+          if (currentUser) {
+            this.usuarioSeleccionado.set(currentUser.id);
+            this.cargarHorarios();
+          }
+        } else {
+          // Si es admin, cargar todos los usuarios
+          this.cargarUsuarios();
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   // Genera el array de horas para el calendario
