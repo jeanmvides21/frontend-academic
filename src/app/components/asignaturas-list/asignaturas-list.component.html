@@ -26,20 +26,6 @@
     </div>
   </div>
 
-  <!-- Error Message -->
-  @if (error) {
-    <div class="error-banner">
-      <i class="pi pi-exclamation-triangle"></i>
-      <span>{{ error }}</span>
-      <p-button
-        label="Reintentar"
-        icon="pi pi-refresh"
-        severity="danger"
-        [text]="true"
-        (onClick)="refresh()"
-      />
-    </div>
-  }
 
   <!-- Dialog para Crear/Editar -->
   <p-dialog
@@ -51,13 +37,6 @@
     [resizable]="false"
   >
     <form [formGroup]="asignaturaForm" (ngSubmit)="saveAsignatura()">
-      @if (error) {
-        <div class="form-error">
-          <i class="pi pi-times-circle"></i>
-          <span>{{ error }}</span>
-        </div>
-      }
-
       <div class="form-group">
         <label for="nombre">Nombre de la Asignatura *</label>
         <input

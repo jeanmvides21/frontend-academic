@@ -463,6 +463,84 @@ $transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-top: 1px solid $border-color;
 }
 
+// Alerta de Cruce
+.cruce-warning {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffecb5 100%);
+  border-left: 4px solid $warning-color;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  animation: slideInDown 0.4s ease-out;
+
+  .warning-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    i {
+      font-size: 1.5rem;
+      color: $warning-color;
+    }
+
+    .warning-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #856404;
+    }
+  }
+
+  .warning-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
+
+    .warning-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.95rem;
+
+      i {
+        color: $warning-color;
+        font-size: 1.1rem;
+        width: 20px;
+      }
+
+      span {
+        color: #856404;
+
+        strong {
+          font-weight: 700;
+          margin-right: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .warning-note {
+    margin: 0.75rem 0 0 0;
+    font-size: 0.9rem;
+    color: #856404;
+    font-style: italic;
+    text-align: center;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // Responsive
 @media (max-width: 1024px) {
   .horarios-container {

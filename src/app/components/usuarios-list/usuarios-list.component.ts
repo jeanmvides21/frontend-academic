@@ -10,6 +10,7 @@ import { DialogModule } from 'primeng/dialog';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-usuarios-list',
@@ -41,12 +42,14 @@ export class UsuariosListComponent implements OnInit {
 
   constructor(
     private usuariosService: UsuariosService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private messageService: MessageService
   ) {
     this.usuarioForm = this.fb.group({
+      cedula: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
       nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       correo: ['', [Validators.required, Validators.email]],
-      telefono: ['']
+      telefono: ['', [Validators.minLength(7), Validators.maxLength(20)]]
     });
   }
 
@@ -94,6 +97,7 @@ export class UsuariosListComponent implements OnInit {
   openEditForm(usuario: Usuario): void {
     this.editingUsuario = usuario;
     this.usuarioForm.patchValue({
+      cedula: usuario.cedula,
       nombre: usuario.nombre,
       correo: usuario.correo,
       telefono: usuario.telefono || ''
@@ -127,23 +131,39 @@ export class UsuariosListComponent implements OnInit {
       next: () => {
         this.loadUsuarios();
         this.closeForm();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: this.editingUsuario 
+            ? 'Estudiante actualizado correctamente' 
+            : 'Estudiante creado correctamente',
+          life: 3000
+        });
       },
       error: (err) => {
         this.loading = false;
         console.error('Error:', err);
+        
+        let errorDetail = this.editingUsuario 
+          ? 'Error al actualizar el estudiante' 
+          : 'Error al crear el estudiante';
+        
         if (err.error?.message) {
-          this.error = err.error.message;
-        } else {
-          this.error = this.editingUsuario 
-            ? 'Error al actualizar el usuario' 
-            : 'Error al crear el usuario';
+          errorDetail = err.error.message;
         }
+        
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: errorDetail,
+          life: 5000
+        });
       }
     });
   }
 
   deleteUsuario(id: number): void {
-    if (!confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este estudiante?')) {
       return;
     }
 
@@ -154,15 +174,28 @@ export class UsuariosListComponent implements OnInit {
       next: () => {
         this.loadUsuarios();
         this.deletingId = null;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Eliminado',
+          detail: 'Estudiante eliminado correctamente',
+          life: 3000
+        });
       },
       error: (err) => {
         this.deletingId = null;
         console.error('Error:', err);
+        
+        let errorDetail = 'Error al eliminar el estudiante';
         if (err.error?.message) {
-          this.error = err.error.message;
-        } else {
-          this.error = 'Error al eliminar el usuario';
+          errorDetail = err.error.message;
         }
+        
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: errorDetail,
+          life: 5000
+        });
       }
     });
   }

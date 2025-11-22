@@ -22,7 +22,7 @@ export class NavbarComponent {
       routerLink: '/calendario'
     },
     {
-      label: 'Usuarios',
+      label: 'Estudiantes',
       icon: 'pi pi-users',
       routerLink: '/usuarios'
     },

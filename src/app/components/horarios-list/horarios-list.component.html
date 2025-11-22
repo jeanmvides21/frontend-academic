@@ -26,20 +26,6 @@
     </div>
   </div>
 
-  <!-- Error Message -->
-  @if (error) {
-    <div class="error-banner">
-      <i class="pi pi-exclamation-triangle"></i>
-      <span>{{ error }}</span>
-      <p-button
-        label="Reintentar"
-        icon="pi pi-refresh"
-        severity="danger"
-        [text]="true"
-        (onClick)="refresh()"
-      />
-    </div>
-  }
 
   <!-- Dialog para Crear/Editar -->
   <p-dialog
@@ -51,23 +37,18 @@
     [resizable]="false"
   >
     <form [formGroup]="horarioForm" (ngSubmit)="saveHorario()">
-      @if (error) {
-        <div class="form-error">
-          <i class="pi pi-times-circle"></i>
-          <span>{{ error }}</span>
-        </div>
-      }
-
       <div class="form-group">
-        <label for="id_usuario">Usuario *</label>
+        <label for="id_usuario">Estudiante *</label>
         <p-select
           inputId="id_usuario"
           formControlName="id_usuario"
           [options]="usuarios"
           optionLabel="nombre"
           optionValue="id"
-          placeholder="Selecciona un usuario"
+          placeholder="Selecciona un estudiante"
           [style]="{ width: '100%' }"
+          [filter]="true"
+          filterPlaceholder="Buscar estudiante..."
           [class.error]="horarioForm.get('id_usuario')?.invalid && horarioForm.get('id_usuario')?.touched"
         />
         @if (horarioForm.get('id_usuario')?.invalid && horarioForm.get('id_usuario')?.touched) {
@@ -144,6 +125,31 @@
         </div>
       </div>
 
+      <!-- Alerta de Cruce de Horarios -->
+      @if (horarioConflicto) {
+        <div class="cruce-warning">
+          <div class="warning-header">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span class="warning-title">Este horario se cruza con:</span>
+          </div>
+          <div class="warning-body">
+            <div class="warning-item">
+              <i class="pi pi-book"></i>
+              <span><strong>Asignatura:</strong> {{ getAsignaturaNombre(horarioConflicto.id_asignatura) }}</span>
+            </div>
+            <div class="warning-item">
+              <i class="pi pi-calendar"></i>
+              <span><strong>Día:</strong> {{ getDiaNombre(horarioConflicto.dia) }}</span>
+            </div>
+            <div class="warning-item">
+              <i class="pi pi-clock"></i>
+              <span><strong>Horario:</strong> {{ horarioConflicto.hora_inicio.substring(0, 5) }} - {{ horarioConflicto.hora_fin.substring(0, 5) }}</span>
+            </div>
+          </div>
+          <p class="warning-note">Por favor, ajusta el horario para evitar el conflicto.</p>
+        </div>
+      }
+
       <div class="form-actions">
         <p-button
           label="Cancelar"
@@ -209,7 +215,7 @@
               <div class="info-item usuario">
                 <i class="pi pi-user"></i>
                 <div class="info-content">
-                  <span class="info-label">Usuario</span>
+                  <span class="info-label">Estudiante</span>
                   <span class="info-value">{{ getUsuarioNombre(horario.id_usuario) }}</span>
                 </div>
               </div>

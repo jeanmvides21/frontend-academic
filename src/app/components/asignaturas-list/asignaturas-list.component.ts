@@ -12,7 +12,8 @@ import { DialogModule } from 'primeng/dialog';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
-import { BadgeModule } from 'primeng/badge';
+import { BadgeModule} from 'primeng/badge';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-asignaturas-list',
@@ -46,7 +47,8 @@ export class AsignaturasListComponent implements OnInit {
 
   constructor(
     private asignaturasService: AsignaturasService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private messageService: MessageService
   ) {
     this.asignaturaForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
@@ -72,15 +74,21 @@ export class AsignaturasListComponent implements OnInit {
         this.loading = false;
         console.error('Error completo:', err);
         
+        let errorMsg = 'Error al cargar las asignaturas';
         if (err.status === 0) {
-          this.error = 'No se puede conectar al backend. Asegúrate de que esté ejecutándose en http://localhost:3000';
+          errorMsg = 'No se puede conectar al backend';
         } else if (err.status === 404) {
-          this.error = 'Endpoint no encontrado. Verifica que el backend esté configurado correctamente.';
+          errorMsg = 'Endpoint no encontrado';
         } else if (err.error?.message) {
-          this.error = `Error: ${err.error.message}`;
-        } else {
-          this.error = 'Error al cargar las asignaturas. Verifica la consola para más detalles.';
+          errorMsg = err.error.message;
         }
+        
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: errorMsg,
+          life: 5000
+        });
       }
     });
   }
@@ -93,7 +101,6 @@ export class AsignaturasListComponent implements OnInit {
     this.editingAsignatura = null;
     this.asignaturaForm.reset({ maxclasessemana: 1 });
     this.showForm = true;
-    this.error = null;
   }
 
   openEditForm(asignatura: Asignatura): void {
@@ -104,14 +111,12 @@ export class AsignaturasListComponent implements OnInit {
       maxclasessemana: asignatura.maxclasessemana
     });
     this.showForm = true;
-    this.error = null;
   }
 
   closeForm(): void {
     this.showForm = false;
     this.editingAsignatura = null;
     this.asignaturaForm.reset({ maxclasessemana: 1 });
-    this.error = null;
   }
 
   saveAsignatura(): void {
@@ -125,7 +130,6 @@ export class AsignaturasListComponent implements OnInit {
     formValue.maxclasessemana = parseInt(formValue.maxclasessemana, 10);
     
     this.loading = true;
-    this.error = null;
 
     const operation = this.editingAsignatura
       ? this.asignaturasService.updateAsignatura(this.editingAsignatura.id, formValue)
@@ -135,17 +139,33 @@ export class AsignaturasListComponent implements OnInit {
       next: () => {
         this.loadAsignaturas();
         this.closeForm();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: this.editingAsignatura 
+            ? 'Asignatura actualizada correctamente' 
+            : 'Asignatura creada correctamente',
+          life: 3000
+        });
       },
       error: (err) => {
         this.loading = false;
         console.error('Error:', err);
+        
+        let errorDetail = this.editingAsignatura 
+          ? 'Error al actualizar la asignatura' 
+          : 'Error al crear la asignatura';
+        
         if (err.error?.message) {
-          this.error = err.error.message;
-        } else {
-          this.error = this.editingAsignatura 
-            ? 'Error al actualizar la asignatura' 
-            : 'Error al crear la asignatura';
+          errorDetail = err.error.message;
         }
+        
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: errorDetail,
+          life: 5000
+        });
       }
     });
   }
@@ -156,21 +176,33 @@ export class AsignaturasListComponent implements OnInit {
     }
 
     this.deletingId = id;
-    this.error = null;
 
     this.asignaturasService.deleteAsignatura(id).subscribe({
       next: () => {
         this.loadAsignaturas();
         this.deletingId = null;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Eliminado',
+          detail: 'Asignatura eliminada correctamente',
+          life: 3000
+        });
       },
       error: (err) => {
         this.deletingId = null;
         console.error('Error:', err);
+        
+        let errorDetail = 'Error al eliminar la asignatura';
         if (err.error?.message) {
-          this.error = err.error.message;
-        } else {
-          this.error = 'Error al eliminar la asignatura';
+          errorDetail = err.error.message;
         }
+        
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: errorDetail,
+          life: 5000
+        });
       }
     });
   }

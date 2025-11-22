@@ -7,47 +7,20 @@
     </div>
     
     <div class="header-controls">
-      <!-- Buscador de Usuario -->
-      <div class="usuario-buscador">
-        <label for="buscar">Buscar Usuario:</label>
-        <p-iconfield iconPosition="left">
-          <p-inputicon styleClass="pi pi-search" />
-          <input
-            pInputText
-            id="buscar"
-            type="text"
-            placeholder="Buscar por nombre o correo..."
-            [value]="searchText()"
-            (input)="onSearchChange($event)"
-            [style]="{ width: '300px' }"
-          />
-        </p-iconfield>
-        @if (searchText()) {
-          <p-button
-            icon="pi pi-times"
-            severity="secondary"
-            [text]="true"
-            [rounded]="true"
-            (onClick)="limpiarBusqueda()"
-            pTooltip="Limpiar búsqueda"
-          />
-        }
-      </div>
-      
-      <!-- Selector de Usuario -->
+      <!-- Selector de Estudiante -->
       <div class="usuario-selector">
-        <label for="usuario">Usuario:</label>
+        <label for="usuario">Estudiante:</label>
         <p-select
           id="usuario"
           [(ngModel)]="usuarioSeleccionado"
-          [options]="usuariosFiltrados()"
+          [options]="usuarios()"
           optionLabel="nombre"
           optionValue="id"
-          placeholder="Seleccionar usuario"
+          placeholder="Seleccionar estudiante"
           (onChange)="onUsuarioChange()"
-          [style]="{ minWidth: '250px' }"
+          [style]="{ minWidth: '350px' }"
           [filter]="true"
-          filterPlaceholder="Filtrar..."
+          filterPlaceholder="Buscar estudiante..."
         />
       </div>
       
@@ -142,7 +115,7 @@
     @if (!loading() && horarios().length === 0) {
       <div class="empty-state">
         <i class="pi pi-calendar-times"></i>
-        <p>No hay horarios para este usuario</p>
+        <p>No hay horarios para este estudiante</p>
       </div>
     } @else if (!loading()) {
       <div class="footer-info">

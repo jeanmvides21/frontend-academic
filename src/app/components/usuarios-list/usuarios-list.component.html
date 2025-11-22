@@ -4,11 +4,11 @@
     <div class="header-content">
       <div class="header-title">
         <i class="pi pi-users"></i>
-        <h1>Gestión de Usuarios</h1>
+        <h1>Gestión de Estudiantes</h1>
       </div>
       <div class="header-actions">
         <p-button
-          label="Nuevo Usuario"
+          label="Nuevo Estudiante"
           icon="pi pi-plus"
           (onClick)="openCreateForm()"
           [disabled]="loading"
@@ -26,37 +26,30 @@
     </div>
   </div>
 
-  <!-- Error Message -->
-  @if (error) {
-    <div class="error-banner">
-      <i class="pi pi-exclamation-triangle"></i>
-      <span>{{ error }}</span>
-      <p-button
-        label="Reintentar"
-        icon="pi pi-refresh"
-        severity="danger"
-        [text]="true"
-        (onClick)="refresh()"
-      />
-    </div>
-  }
 
   <!-- Dialog para Crear/Editar -->
   <p-dialog
-    [header]="editingUsuario ? 'Editar Usuario' : 'Nuevo Usuario'"
+    [header]="editingUsuario ? 'Editar Estudiante' : 'Nuevo Estudiante'"
     [(visible)]="showForm"
     [modal]="true"
-    [style]="{ width: '500px' }"
+    [style]="{ width: '550px' }"
     [draggable]="false"
     [resizable]="false"
   >
     <form [formGroup]="usuarioForm" (ngSubmit)="saveUsuario()">
-      @if (error) {
-        <div class="form-error">
-          <i class="pi pi-times-circle"></i>
-          <span>{{ error }}</span>
-        </div>
-      }
+      <div class="form-group">
+        <label for="cedula">Cédula *</label>
+        <input
+          pInputText
+          id="cedula"
+          formControlName="cedula"
+          placeholder="Ej: 1234567890"
+          [class.error]="usuarioForm.get('cedula')?.invalid && usuarioForm.get('cedula')?.touched"
+        />
+        @if (usuarioForm.get('cedula')?.invalid && usuarioForm.get('cedula')?.touched) {
+          <small class="error-text">{{ getFieldError('cedula') }}</small>
+        }
+      </div>
 
       <div class="form-group">
         <label for="nombre">Nombre Completo *</label>
@@ -64,7 +57,7 @@
           pInputText
           id="nombre"
           formControlName="nombre"
-          placeholder="Ej: Juan Pérez"
+          placeholder="Ej: Juan Pérez García"
           [class.error]="usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched"
         />
         @if (usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched) {
@@ -79,7 +72,7 @@
           id="correo"
           type="email"
           formControlName="correo"
-          placeholder="ejemplo@correo.com"
+          placeholder="estudiante@correo.com"
           [class.error]="usuarioForm.get('correo')?.invalid && usuarioForm.get('correo')?.touched"
         />
         @if (usuarioForm.get('correo')?.invalid && usuarioForm.get('correo')?.touched) {
@@ -88,13 +81,17 @@
       </div>
 
       <div class="form-group">
-        <label for="telefono">Teléfono</label>
+        <label for="telefono">Teléfono *</label>
         <input
           pInputText
           id="telefono"
           formControlName="telefono"
-          placeholder="Ej: +57 300 123 4567"
+          placeholder="Ej: 3001234567"
+          [class.error]="usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched"
         />
+        @if (usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched) {
+          <small class="error-text">{{ getFieldError('telefono') }}</small>
+        }
       </div>
 
       <div class="form-actions">
@@ -130,10 +127,10 @@
   @else if (!loading && usuarios.length === 0) {
     <div class="empty-state">
       <i class="pi pi-users"></i>
-      <h3>No hay usuarios registrados</h3>
-      <p>Comienza agregando tu primer usuario</p>
+      <h3>No hay estudiantes registrados</h3>
+      <p>Comienza agregando tu primer estudiante</p>
       <p-button
-        label="Crear Usuario"
+        label="Crear Estudiante"
         icon="pi pi-plus"
         (onClick)="openCreateForm()"
         severity="success"
@@ -157,6 +154,14 @@
           </div>
 
           <div class="card-body">
+            <div class="info-item">
+              <i class="pi pi-id-card"></i>
+              <div class="info-content">
+                <span class="info-label">Cédula</span>
+                <span class="info-value">{{ usuario.cedula }}</span>
+              </div>
+            </div>
+
             <div class="info-item">
               <i class="pi pi-envelope"></i>
               <div class="info-content">

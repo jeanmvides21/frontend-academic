@@ -6,9 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
-import { InputTextModule } from 'primeng/inputtext';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
+import { MessageService } from 'primeng/api';
 
 import { HorariosService } from '../../services/horarios.service';
 import { UsuariosService } from '../../services/usuarios.service';
@@ -34,10 +32,7 @@ interface CalendarioEvento {
     ButtonModule,
     CardModule,
     SkeletonModule,
-    TooltipModule,
-    InputTextModule,
-    IconFieldModule,
-    InputIconModule
+    TooltipModule
   ],
   templateUrl: './calendario-semanal.component.html',
   styleUrl: './calendario-semanal.component.scss'
@@ -45,11 +40,9 @@ interface CalendarioEvento {
 export class CalendarioSemanalComponent implements OnInit {
   // Señales de estado
   usuarios = signal<Usuario[]>([]);
-  usuariosFiltrados = signal<Usuario[]>([]);
   usuarioSeleccionado = signal<number | null>(null);
   horarios = signal<Horario[]>([]);
   loading = signal<boolean>(false);
-  searchText = signal<string>('');
   
   // Configuración del calendario
   diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
@@ -68,7 +61,8 @@ export class CalendarioSemanalComponent implements OnInit {
   
   constructor(
     private horariosService: HorariosService,
-    private usuariosService: UsuariosService
+    private usuariosService: UsuariosService,
+    private messageService: MessageService
   ) {
     this.generarHoras();
   }
@@ -91,7 +85,6 @@ export class CalendarioSemanalComponent implements OnInit {
     this.usuariosService.getUsuarios().subscribe({
       next: (usuarios) => {
         this.usuarios.set(usuarios);
-        this.usuariosFiltrados.set(usuarios);
         this.loading.set(false);
         
         // Seleccionar el primer usuario automáticamente
@@ -103,38 +96,14 @@ export class CalendarioSemanalComponent implements OnInit {
       error: (err) => {
         console.error('Error al cargar usuarios:', err);
         this.loading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Error al cargar los estudiantes',
+          life: 5000
+        });
       }
     });
-  }
-
-  // Filtrar usuarios por búsqueda
-  filtrarUsuarios() {
-    const search = this.searchText().toLowerCase().trim();
-    
-    if (!search) {
-      this.usuariosFiltrados.set(this.usuarios());
-      return;
-    }
-
-    const filtrados = this.usuarios().filter(usuario => 
-      usuario.nombre.toLowerCase().includes(search) ||
-      usuario.correo.toLowerCase().includes(search)
-    );
-    
-    this.usuariosFiltrados.set(filtrados);
-  }
-
-  // Evento cuando cambia el texto de búsqueda
-  onSearchChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this.searchText.set(input.value);
-    this.filtrarUsuarios();
-  }
-
-  // Limpiar búsqueda
-  limpiarBusqueda() {
-    this.searchText.set('');
-    this.usuariosFiltrados.set(this.usuarios());
   }
 
   // Carga los horarios del usuario seleccionado
@@ -151,6 +120,12 @@ export class CalendarioSemanalComponent implements OnInit {
       error: (err) => {
         console.error('Error al cargar horarios:', err);
         this.loading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Error al cargar los horarios',
+          life: 5000
+        });
       }
     });
   }
